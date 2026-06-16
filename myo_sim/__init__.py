@@ -54,9 +54,23 @@ def get_xml_path(name: str) -> Path:
     return MODELS_DIR / REGISTRY[name]
 
 
+# MjSpec-composed models: built via build_model() rather than a static XML path.
+_COMPOSED_MODELS: frozenset[str] = frozenset({"myohand_r", "myohands", "myoarms", "myofullbody"})
+
+
 def load(name: str) -> tuple:
-    """Load a MuJoCo model by registry name. Returns (MjModel, MjData)."""
+    """Load a MuJoCo model by registry name. Returns (MjModel, MjData).
+
+    Supports both static XML models (resolved via REGISTRY) and MjSpec-composed
+    models (myohand_r, myohands, myoarms, myofullbody).
+    """
     import mujoco
+
+    if name in _COMPOSED_MODELS:
+        from myo_sim.build.compose import build_model
+
+        model = build_model(name)
+        return model, mujoco.MjData(model)
 
     xml_path = get_xml_path(name)
     model = mujoco.MjModel.from_xml_path(str(xml_path))
