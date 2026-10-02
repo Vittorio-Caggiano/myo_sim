@@ -1,0 +1,13 @@
+{
+  "nq": 70,
+  "nv": 69,
+  "nu": 134,
+  "njnt": 64,
+  "n_muscles": 134,
+  "n_contact_geoms": 23,
+  "n_pairs": 22,
+  "naconmax": 256,
+  "n_limits": 63,
+  "lts_calibration": "lopt = MuJoCo L0, lts = lengthrange0 - range0*L0 (rigid-tendon map); 26 degenerate maps re-anchored to ln=1 at qpos0",
+  "fiber_length_fix": "2026-09-30: lopt was the MTU length at ln=1 (fibers ~whole MTU)"
+}

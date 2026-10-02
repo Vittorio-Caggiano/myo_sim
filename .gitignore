@@ -10,6 +10,43 @@ __pycache__/
 /dist/
 /build/
 
+# Compiled C plugin libraries (myo_sim/plugin/build.sh regenerates these)
+myo_sim/plugin/*.so
+myo_sim/plugin/*.dylib
+
+# Ephemeral MJCF written by myo_sim.physics C prepare_model next to source models
+myo_sim/models/**/*_plugin.xml
+
+# Asset edit backups
+*.bak
+*.bak_*
+
+# MuJoCo runtime log
+MUJOCO_LOG.TXT
+
+# Local investigation notes / WIP docs (not part of the release surface)
+docs/achilles-elastic-tendon-validation.md
+docs/ground-contact-system-id.md
+docs/muscle-groups-fullbody.md
+docs/wiki/anny-visual-overlay.md
+docs/wiki/atlas-visual-overlay.md
+docs/wiki/rigged-visual-overlay.md
+
+# Experimental calibrated fullbody_simple assets (regenerate locally if needed)
+myo_sim/models/fullbody_simple_calibrated/
+myo_sim/fullbody_simple_calibrated_assets.py
+myo_sim/build/fullbody_simple_calibrated_assets.py
+
+# Generated compose snapshots (produce with: python -m myo_sim.build.compose --generate)
+myo_sim/models/arm/myoarms.xml
+myo_sim/models/leg/myolegs.xml
+myo_sim/models/leg/myolegs26.xml
+myo_sim/models/torso/myotorso.xml
+myo_sim/models/myofullbody.xml
+
+# Duplicate/untracked arm mesh copies (canonical meshes already under models/meshes/)
+myo_sim/models/meshes/arm_r_*.stl
+
 # Virtual environments
 .venv/
 venv/
@@ -32,3 +69,13 @@ tests/output/
 .idea/
 .vscode/
 .claude/
+
+sandbox/
+docs/images/anny/
+docs/images/atlas/
+docs/images/mhr/
+docs/images/models/
+.cache/
+myo_sim/models/visual/
+work/
+scripts/

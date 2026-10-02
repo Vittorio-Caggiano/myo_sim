@@ -79,6 +79,58 @@ model = build_model("myofullbody")
 print(f"Full body — joints: {model.njnt}, muscles: {model.nu}")
 ```
 
+## Bolt-parity muscles and contact (MuJoCo C + Warp)
+
+Stock MyoSim models use MuJoCo’s rigid-tendon `mjGAIN_MUSCLE` actuators and solver contacts.
+Optional De Groote–Fregly muscles and Hunt–Crossley contacts (Bolt-matched) ship as two backends
+on the same asset tables (`myo_sim.sprinter_assets`, `myo_sim.fullbody_simple_assets`):
+
+| Backend | Package | How forces are applied |
+|---|---|---|
+| MuJoCo C (float64) | `myo_sim.plugin` | Passiveive plugin `myo.muscles` inside `mj_step` |
+| MuJoCo Warp (float32) | `myo_sim.warp` | `MuscleSystem` / `ContactSystem` → `qfrc_applied` / `xfrc_applied` |
+
+**Build the C plugin** (once per machine / MuJoCo version; needs a C compiler):
+
+```bash
+# after pip/uv install, from the package tree — or:
+python -c "from myo_sim.plugin import ensure_built; ensure_built()"
+# equivalent: bash myo_sim/plugin/build.sh
+```
+
+**Warp extras** (optional; not required for core MyoSim):
+
+```bash
+pip install warp-lang mujoco-warp
+```
+
+**Switch backends with one driver:**
+
+```python
+from myo_sim import sprinter_assets
+from myo_sim.physics import make_musculoskeletal
+import mujoco
+
+muscles = sprinter_assets.load_muscles()
+contact = sprinter_assets.load_contact()
+limits = sprinter_assets.load_limits()
+xml = sprinter_assets.xml_path()
+nbody = mujoco.MjModel.from_xml_path(str(xml)).nbody
+
+# CPU / MuJoCo plugin
+drv = make_musculoskeletal("c", muscles, contact, limits=limits, nbody=nbody)
+m, d = drv.prepare_model(xml)
+drv.equilibrate()
+drv.step()  # mj_step; plugin applies muscles + contacts
+
+# GPU-batchable Warp path (same assets)
+# drv = make_musculoskeletal("warp", muscles, contact, limits=limits, nbody=nbody, device="cuda:0")
+# m, d = drv.prepare_model(xml)
+# drv.step()  # MuscleSystem + ContactSystem around mjw.step
+```
+
+See `NOTICE` for Bolt / msk_envs provenance.
+
 ## Development
 
 ```bash
@@ -111,6 +163,41 @@ If you find this repository useful in your research, please cite the following w
   author={Li, Chengkun and Wang, Cheryl and Ziliotto, Bianca and Simos, Merkourios and Kovecses, Jozsef and Durandau, Guillaume and Mathis, Alexander},
   journal={arXiv preprint arXiv:2603.25544},
   year={2026}
+}
+```
+
+### Musculoskeletal dynamics (De Groote–Fregly muscles, Hunt–Crossley contact)
+
+`myo_sim.warp`, `myo_sim.plugin`, and the `myosprinter` / fullbody_simple bolt-parity assets are derived
+from [Bolt](https://github.com/willwng/bolt) ([project page](https://bolt-simulator.github.io); Apache-2.0
+since `c1db1fe`) and [msk_envs](https://github.com/willwng/msk_envs) (Apache-2.0 since `398950c`) by
+William Wang et al.; see [NOTICE](NOTICE). If you use them, please cite:
+
+```bibtex
+@inproceedings{Wang2026Bolt,
+  author    = {William Wang and Nicholas Bianco and Guy Tevet and Jennifer Hicks and C. Karen Liu and
+               Scott Delp and Kayvon Fatahalian},
+  title     = {Learning Realistic Athletic Sprinting Without Demonstrations},
+  booktitle = {SIGGRAPH Asia 2026 Conference Papers},
+  series    = {SA Conference Papers '26},
+  year      = {2026},
+  publisher = {Association for Computing Machinery},
+  doi       = {10.1145/3829340.3842159},
+  url       = {https://doi.org/10.1145/3829340.3842159}
+}
+```
+
+```bibtex
+@article{DeGroote2016,
+  author  = {De Groote, Friedl and Kinney, Allison L. and Rao, Anil V. and Fregly, Benjamin J.},
+  title   = {Evaluation of Direct Collocation Optimal Control Problem Formulations for Solving the Muscle
+             Redundancy Problem},
+  journal = {Annals of Biomedical Engineering},
+  volume  = {44},
+  number  = {10},
+  pages   = {2922--2936},
+  year    = {2016},
+  doi     = {10.1007/s10439-016-1591-9}
 }
 ```
 

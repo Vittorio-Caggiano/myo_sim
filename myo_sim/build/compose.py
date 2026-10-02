@@ -31,7 +31,7 @@ import mujoco
 from myo_sim import MODELS_DIR
 
 try:
-    from .hand import prune_arm_spec_to_hand
+    from .hand import prune_arm_spec_to_hand, strip_arm_distal_joints, strip_arm_distal_muscles
     from .utils import (
         MirrorRules,
         add_contact_pairs,
@@ -42,7 +42,7 @@ try:
         find_site,
     )
 except ImportError:
-    from hand import prune_arm_spec_to_hand
+    from hand import prune_arm_spec_to_hand, strip_arm_distal_joints, strip_arm_distal_muscles
     from utils import (
         MirrorRules,
         add_contact_pairs,
@@ -61,6 +61,7 @@ GENERATE_XML_TARGETS: dict[str, Path] = {
     "myolegs": Path("leg/myolegs.xml"),
     "myolegs26": Path("leg/myolegs26.xml"),
     "myofullbody": Path("myofullbody.xml"),
+    "myofullbody_simple": Path("myofullbody_simple.xml"),
 }
 
 TORSO_ABDOMEN_TENDONS_XML = ROOT / "torso" / "assets" / "myotorso_abdomen_tendon.xml"
@@ -71,6 +72,7 @@ TORSO_MUSCLES_XML = ROOT / "torso" / "assets" / "myotorso_muscle.xml"
 TORSO_CHAIN_XML = ROOT / "torso" / "assets" / "myotorso_chain.xml"
 HEAD_SIMPLE_ASSETS_XML = ROOT / "head" / "assets" / "myohead_simple_assets.xml"
 SCENE_XML = ROOT / "scene" / "myosuite_scene.xml"
+SCENE_NO_PEDESTAL_XML = ROOT / "scene" / "myosuite_scene_noPedestal.xml"
 MUSCLEMIMIC_SCENE_XML = ROOT / "scene" / "myosuite_scene_musclemimic.xml"
 TORSO_ABDOMEN_UNLOCKED_JOINTS = {"flex_extension", "lat_bending", "axial_rotation"}
 ARM_CONTACTS_XML = ROOT / "contacts" / "myoarm_contacts.xml"
@@ -112,6 +114,7 @@ class BuildStrategy(str, Enum):
     RIGHT_HAND = "right_hand"
     BOTH_HANDS = "both_hands"
     FULLBODY = "fullbody"
+    FULLBODY_SIMPLE = "fullbody_simple"
     LEGS_BODY = "legs_body"
     LEGS26_BODY = "legs26_body"
     TORSO_ABDOMEN = "torso_abdomen"
@@ -209,6 +212,22 @@ MODEL_REGISTRY = {
             "include_fullbody_contacts": True,
             "add_root_freejoint": True,
             "root_pos": (-0.025, 0.1, 1),
+        },
+    ),
+    "myofullbody_simple": ModelRegistration(
+        name="myofullbody_simple",
+        build_strategy=BuildStrategy.FULLBODY_SIMPLE,
+        description="Bolt-like HAT torso (abdomen) + arms without distal muscle + legs",
+        build_kwargs={
+            "left_arm_strategy": LEFT_ARM_STRATEGY_MIRROR_RIGHT,
+            "include_left_arm_contacts": True,
+            "include_arm_contacts": True,
+            "include_legs": True,
+            "include_fullbody_contacts": True,
+            "add_root_freejoint": True,
+            "root_pos": (-0.025, 0.1, 1),
+            # Official noPedestal: floor at z=0 (pedestal scene puts floor at z=-0.4).
+            "scene_xml": SCENE_NO_PEDESTAL_XML,
         },
     ),
 }
@@ -365,6 +384,9 @@ def build_legs26_spec(registration: Optional[ModelRegistration] = None) -> mujoc
 
 def _build_torso_abdomen_from_xml(registration: Optional[ModelRegistration] = None) -> mujoco.MjSpec:
     # TODO: Investigate spec-only approach to have the same effect
+    scene_xml = SCENE_XML
+    if registration is not None:
+        scene_xml = registration.build_kwargs.get("scene_xml", SCENE_XML)
     abdomen_xml = build_child_xml_from_components(
         model_name="myotorso_abdomen_attach",
         compiler_meshdir=ROOT,
@@ -375,7 +397,7 @@ def _build_torso_abdomen_from_xml(registration: Optional[ModelRegistration] = No
         root_body_name="root",
         root_site_name="torso_abdomen_root_attach",
         extra_assets_xmls=(HEAD_SIMPLE_ASSETS_XML,),
-        scene_xmls=(SCENE_XML,),
+        scene_xmls=(scene_xml,),
     )
     abdomen = mujoco.MjSpec.from_string(abdomen_xml)
     abdomen.compiler.balanceinertia = True
@@ -525,6 +547,46 @@ def build_legs_abdomen_spec(registration: ModelRegistration) -> mujoco.MjSpec:
     return abdomen
 
 
+def build_fullbody_simple_spec(registration: ModelRegistration) -> mujoco.MjSpec:
+    """Abdomen torso + upper-arm muscles only + legs (Bolt-like HAT fullbody)."""
+    abdomen = build_torso_abdomen_spec(registration)
+    root_body = find_body(abdomen, "root")
+    # Align with myofullbody naming so shared sensors/contacts resolve.
+    root_body.name = "Full Body"
+    if registration.build_kwargs.get("add_root_freejoint", False):
+        root_body.add_freejoint(name="root")
+
+    if registration.build_kwargs.get("include_arm_contacts", True):
+        add_contact_pairs(
+            abdomen,
+            ARM_CONTACTS_XML,
+            include_pair=lambda pair: pair_is_supported(
+                pair, registration.build_kwargs.get("include_left_arm_contacts", False)
+            ),
+        )
+    if registration.build_kwargs.get("include_legs", False):
+        add_contact_pairs(abdomen, LEG_CONTACTS_XML)
+    if registration.build_kwargs.get("include_fullbody_contacts", False):
+        add_contact_pairs(abdomen, FULLBODY_CONTACTS_XML)
+
+    right_arm = build_right_arm_spec(registration)
+    strip_arm_distal_muscles(right_arm, "r")
+    strip_arm_distal_joints(right_arm, "r")
+    abdomen.attach(right_arm, prefix="", suffix="", site=find_site(abdomen, RIGHT_ARM_ATTACH_SITE))
+
+    left_arm = build_left_arm_spec(registration)
+    if left_arm is not None:
+        strip_arm_distal_muscles(left_arm, "l")
+        strip_arm_distal_joints(left_arm, "l")
+        abdomen.attach(left_arm, prefix="", suffix="", site=find_site(abdomen, LEFT_ARM_ATTACH_SITE))
+
+    add_sensors(abdomen, FULLBODY_SENSORS_XML)
+
+    legs_frame = root_body.add_frame(name="legs_attach")
+    abdomen.attach(build_legs_spec(registration), prefix="", suffix="", frame=legs_frame)
+    return abdomen
+
+
 SPEC_BUILDERS = {
     BuildStrategy.TORSO_BODY: build_torso_body_spec,
     BuildStrategy.TORSO_ARMS: build_torso_arms_spec,
@@ -533,6 +595,7 @@ SPEC_BUILDERS = {
     BuildStrategy.RIGHT_HAND: build_right_hand_torso_from_arm_spec,
     BuildStrategy.BOTH_HANDS: build_both_hands_torso_from_arm_spec,
     BuildStrategy.FULLBODY: build_fullbody_spec,
+    BuildStrategy.FULLBODY_SIMPLE: build_fullbody_simple_spec,
     BuildStrategy.LEGS_BODY: build_legs_body_spec,
     BuildStrategy.LEGS26_BODY: build_legs26_body_spec,
     BuildStrategy.TORSO_ABDOMEN: build_torso_abdomen_spec,

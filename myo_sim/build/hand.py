@@ -197,6 +197,98 @@ def fix_up_welded_phantom_inertia(spec: object, side: str) -> None:
             body.inertia = [PHANTOM_SCAFFOLD_INERTIA_FLOOR] * 3
 
 
+# Wrist/hand hinge joints left unactuated after strip_arm_distal_muscles. Right-side
+# chain names are inconsistent (some lack ``_r``); left side always has ``_l``.
+DISTAL_ORPHAN_JOINTS_R: frozenset[str] = frozenset(
+    {
+        "deviation_r",
+        "flexion_r",
+        "cmc_flexion",
+        "cmc_abduction",
+        "mp_flexion_r",
+        "ip_flexion_r",
+        "mcp2_flexion_r",
+        "mcp2_abduction_r",
+        "pm2_flexion_r",
+        "md2_flexion_r",
+        "mcp3_flexion_r",
+        "mcp3_abduction_r",
+        "pm3_flexion_r",
+        "md3_flexion",
+        "mcp4_flexion_r",
+        "mcp4_abduction_r",
+        "pm4_flexion",
+        "md4_flexion_r",
+        "mcp5_flexion_r",
+        "mcp5_abduction_r",
+        "pm5_flexion_r",
+        "md5_flexion_r",
+    }
+)
+DISTAL_ORPHAN_JOINTS_L: frozenset[str] = frozenset(
+    {
+        "deviation_l",
+        "flexion_l",
+        "cmc_flexion_l",
+        "cmc_abduction_l",
+        "mp_flexion_l",
+        "ip_flexion_l",
+        "mcp2_flexion_l",
+        "mcp2_abduction_l",
+        "pm2_flexion_l",
+        "md2_flexion_l",
+        "mcp3_flexion_l",
+        "mcp3_abduction_l",
+        "pm3_flexion_l",
+        "md3_flexion_l",
+        "mcp4_flexion_l",
+        "mcp4_abduction_l",
+        "pm4_flexion_l",
+        "md4_flexion_l",
+        "mcp5_flexion_l",
+        "mcp5_abduction_l",
+        "pm5_flexion_l",
+        "md5_flexion_l",
+    }
+)
+
+
+def strip_arm_distal_muscles(spec: object, side: str) -> None:
+    """Remove wrist/hand/finger actuators and tendons; keep distal joints/bodies.
+
+    Inverse of :func:`prune_arm_spec_to_hand` on the muscle set: upper-arm
+    actuators stay, ``RIGHT_HAND_ACTUATORS`` (and their tendons) are deleted.
+    Distal joints remain so hand mass stays in the dynamics as a passive chain
+    unless :func:`strip_arm_distal_joints` is also called (preferred for sprint:
+    weld the unactuated chain fixed so orphan DOFs cannot flop).
+    """
+    removed_tendon_names: set[str] = set()
+    for actuator in list(spec.actuators):
+        if base_actuator_name(actuator.name, side) in RIGHT_HAND_ACTUATORS:
+            removed_tendon_names.add(actuator.target)
+            spec.delete(actuator)
+
+    for tendon in list(spec.tendons):
+        if tendon.name in removed_tendon_names:
+            spec.delete(tendon)
+
+
+def strip_arm_distal_joints(spec: object, side: str) -> None:
+    """Delete unactuated wrist/hand joints so distal bodies weld fixed to the forearm.
+
+    Call after :func:`strip_arm_distal_muscles`. Hand mass remains (bodies stay),
+    but the 22 orphan DOFs/side no longer flop under gravity/contact.
+    """
+    removed = DISTAL_ORPHAN_JOINTS_L if side == "l" else DISTAL_ORPHAN_JOINTS_R
+    for equality in list(spec.equalities):
+        if equality.name1 in removed or equality.name2 in removed:
+            spec.delete(equality)
+    for joint_name in removed:
+        joint = spec.joint(joint_name)
+        if joint is not None:
+            spec.delete(joint)
+
+
 def prune_arm_spec_to_hand(spec: object, side: str) -> None:
     """Remove proximal arm dynamics from an arm spec, leaving wrist/hand controls."""
     removed_joints = {side_name(name, side) for name in RIGHT_HAND_REMOVED_JOINTS}

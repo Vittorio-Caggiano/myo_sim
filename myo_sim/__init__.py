@@ -32,6 +32,11 @@ _FRAGMENT_CATALOG: list[tuple[str, str, int]] = [
     ("myofinger", "legacy/finger/myofinger_v0.xml", 1),
     ("osl", "legacy/osl/myolegs_osl.xml", 1),
     ("myolegs_osl", "legacy/osl/myolegs_osl.xml", 1),
+    # Bolt-parity full-body sprinter (136 muscles, freejoint pelvis). Pre-built, packaged whole (not composed
+    # from myo_sim's own arm/leg/torso fragments): converted from Bolt's example OpenSim model and msk_envs
+    # sprinter assets (both Apache-2.0; see NOTICE). Pairs with myo_sim.warp / myo_sim.plugin for muscle
+    # and contact physics (see myo_sim.sprinter_assets).
+    ("myosprinter", "sprint/myosprinter.xml", 1),
 ]
 
 REGISTRY: dict[str, str] = {}

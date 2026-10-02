@@ -1,0 +1,37 @@
+MyoSim
+Copyright MyoSuite Authors. Licensed under the Apache License, Version 2.0.
+
+This product includes work derived from Bolt (https://github.com/willwng/bolt,
+https://bolt-simulator.github.io) by William Wang et al., licensed under the
+Apache License, Version 2.0 (https://github.com/willwng/bolt/blob/main/LICENSE)
+since commit c1db1fe (26 Sep 2026):
+
+- myo_sim/models/sprint/ and myo_sim/sprinter_assets.py: MuJoCo conversion of Bolt's
+  example full-body model (data/models/example_model.osim) and its function-based
+  muscle paths, with muscle and contact parameters in myo_sim's own format.
+- myo_sim/warp/ and myo_sim/plugin/: De Groote–Fregly muscle and Hunt–Crossley contact
+  implementations that follow Bolt's formulation (clamps, branch order, solver
+  tolerances, rigid-tendon handling, reset equilibrium, broadphase), rewritten in C
+  (float64) and MuJoCo Warp (float32).
+
+This product also includes material from msk_envs (https://github.com/willwng/msk_envs)
+by William Wang et al., licensed under the Apache License, Version 2.0
+(https://github.com/willwng/msk_envs/blob/main/LICENSE) since commit 398950c
+(27 Sep 2026):
+
+- myo_sim/models/sprint/ and myo_sim/sprinter_assets.py: the sprinter model
+  (msk_models/sprinter/, the same subject as Bolt's example model) and its sprint
+  contact parameters / EnvConfigSprinter-style load-time muscle overrides (e.g. F0×2,
+  vmax) used when building fullbody_simple bolt-parity assets.
+
+Changes from Bolt: the models are converted to MJCF; the muscle and contact code is
+new code in a different language/runtime and couples to MuJoCo through qfrc_passive /
+qfrc_applied / xfrc_applied; the damped fiber-velocity Newton uses a fixed iteration
+count without Bolt's random rank-loss perturbation; the tendon strain at one
+normalized force is a per-muscle parameter.
+
+The De Groote–Fregly constants follow OpenSim's DeGrooteFregly2016Muscle (Apache-2.0,
+https://github.com/opensim-org/opensim-core).
+
+Please cite Bolt (and msk_envs when using the sprinter / athletic task material); see
+README.md for BibTeX.

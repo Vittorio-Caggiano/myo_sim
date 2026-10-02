@@ -1,0 +1,255 @@
+<mujoco model="bolt_example_full">
+  <compiler angle="radian" autolimits="false" boundmass="0" boundinertia="0"/>
+  <option timestep="0.0001" gravity="0.0 -9.80665 0.0" integrator="Euler">
+    <flag contact="disable"/>
+  </option>
+  
+  <worldbody>
+    <body name="ground_pelvis_frame" pos="0 0 0" quat="1 0 0 0">
+      <freejoint name="ground_pelvis"/>
+      <body name="pelvis" pos="0 0 0" quat="1 0 0 0"><inertial pos="-0.062385299999999998 0 0" mass="11.307797686677" fullinertia="0.075601399999999999 0.075601399999999999 0.043285999999999998 0 0 0"/>
+        <body name="hip_r_frame" pos="-0.062385299999999998 -0.058326299999999998 0.072839899999999999" quat="1 0 0 0">
+          <joint name="hip_flexion_r" damping="0.10000000000000001" type="hinge" axis="0 0 1" limited="false"/>
+          <joint name="hip_adduction_r" damping="0.10000000000000001" type="hinge" axis="1 0 0" limited="false"/>
+          <joint name="hip_rotation_r" damping="0.10000000000000001" type="hinge" axis="0 1 0" limited="false"/>
+          <body name="femur_r" pos="0 0 0" quat="1 0 0 0"><inertial pos="0 -0.18156900000000001 0" mass="8.93082698504349" fullinertia="0.13983699999999999 0.0248011 0.13983699999999999 0 0 0"/>
+            <body name="knee_r_frame" pos="0.0041000000000000003 -0.40999999999999998 0" quat="1 0 0 0">
+              <joint name="knee_angle_r" damping="0.10000000000000001" type="hinge" axis="0 0 1" limited="false"/>
+              <body name="tibia_r" pos="0 0 0" quat="1 0 0 0"><inertial pos="0 -0.208895 0" mass="3.5597911117733601" fullinertia="0.059174999999999998 0.0033171699999999999 0.059174999999999998 0 0 0"/>
+                <body name="ankle_r_frame" pos="0 -0.48111799999999999 0" quat="1 0 0 0">
+                  <joint name="ankle_angle_r" damping="0.10000000000000001" type="hinge" axis="-0.10501355 -0.17402245 0.97912631999999999" limited="false"/>
+                  <body name="talus_r" pos="0 0 0" quat="1 0 0 0"><inertial pos="0 0 0" mass="0.096015943675613294" fullinertia="0.000739195 0.00070392600000000001 0.00070392600000000001 0 0 0"/>
+                    <body name="subtalar_r_frame" pos="-0.040698900000000003 -0.036807800000000002 0.0069491700000000002" quat="1 0 0 0">
+                      <joint name="subtalar_angle_r" damping="0.10000000000000001" type="hinge" axis="0.78717961000000003 0.60474746000000001 -0.12094949000000001" limited="false"/>
+                      <body name="calcn_r" pos="0 0 0" quat="1 0 0 0"><inertial pos="0.0834506 0.026322600000000002 0" mass="1.2001992959451699" fullinertia="0.00103487 0.0026571400000000001 0.0026571400000000001 0 0 0"/>
+                        <body name="mtp_r_frame" pos="0.14921000000000001 -0.0017548399999999999 0.00094761400000000005" quat="1 0 0 0">
+                          <joint name="mtp_angle_r" stiffness="65" damping="0.40000000000000002" type="hinge" axis="-0.58095439999999998 0 0.81393610999999999" limited="false"/>
+                          <body name="toes_r" pos="0 0 0" quat="1 0 0 0"><inertial pos="0.028873900000000001 0.00526452 -0.015354899999999999" mass="0.20797053400137799" fullinertia="7.3919500000000003e-05 0.00013725799999999999 0.00013725799999999999 0 0 0"/>
+                          </body>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+        <body name="hip_l_frame" pos="-0.062385299999999998 -0.058326299999999998 -0.072839899999999999" quat="1 0 0 0">
+          <joint name="hip_flexion_l" damping="0.10000000000000001" type="hinge" axis="0 0 1" limited="false"/>
+          <joint name="hip_adduction_l" damping="0.10000000000000001" type="hinge" axis="-1 0 0" limited="false"/>
+          <joint name="hip_rotation_l" damping="0.10000000000000001" type="hinge" axis="0 -1 0" limited="false"/>
+          <body name="femur_l" pos="0 0 0" quat="1 0 0 0"><inertial pos="0 -0.18156900000000001 0" mass="8.93082698504349" fullinertia="0.13983699999999999 0.0248011 0.13983699999999999 0 0 0"/>
+            <body name="knee_l_frame" pos="0.0041000000000000003 -0.40999999999999998 0" quat="1 0 0 0">
+              <joint name="knee_angle_l" damping="0.10000000000000001" type="hinge" axis="0 0 1" limited="false"/>
+              <body name="tibia_l" pos="0 0 0" quat="1 0 0 0"><inertial pos="0 -0.208895 0" mass="3.5597911117733601" fullinertia="0.059174999999999998 0.0033171699999999999 0.059174999999999998 0 0 0"/>
+                <body name="ankle_l_frame" pos="0 -0.48111799999999999 0" quat="1 0 0 0">
+                  <joint name="ankle_angle_l" damping="0.10000000000000001" type="hinge" axis="0.10501355 0.17402245 0.97912631999999999" limited="false"/>
+                  <body name="talus_l" pos="0 0 0" quat="1 0 0 0"><inertial pos="0 0 0" mass="0.096015943675613294" fullinertia="0.000739195 0.00070392600000000001 0.00070392600000000001 0 0 0"/>
+                    <body name="subtalar_l_frame" pos="-0.040698900000000003 -0.036807800000000002 -0.0069491700000000002" quat="1 0 0 0">
+                      <joint name="subtalar_angle_l" damping="0.10000000000000001" type="hinge" axis="-0.78717961000000003 -0.60474746000000001 -0.12094949000000001" limited="false"/>
+                      <body name="calcn_l" pos="0 0 0" quat="1 0 0 0"><inertial pos="0.0834506 0.026322600000000002 0" mass="1.2001992959451699" fullinertia="0.00103487 0.0026571400000000001 0.0026571400000000001 0 0 0"/>
+                        <body name="mtp_l_frame" pos="0.14921000000000001 -0.0017548399999999999 -0.00094761400000000005" quat="1 0 0 0">
+                          <joint name="mtp_angle_l" stiffness="65" damping="0.40000000000000002" type="hinge" axis="0.58095439999999998 0 0.81393610999999999" limited="false"/>
+                          <body name="toes_l" pos="0 0 0" quat="1 0 0 0"><inertial pos="0.028873900000000001 0.00526452 0.015354899999999999" mass="0.20797053400137799" fullinertia="7.3919500000000003e-05 0.00013725799999999999 0.00013725799999999999 0 0 0"/>
+                          </body>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+        <body name="back_frame" pos="-0.1007 0.078631199999999998 0" quat="1 0 0 0">
+          <joint name="torso_extension" damping="1" type="hinge" axis="0 0 1" limited="false"/>
+          <joint name="torso_bending" damping="1" type="hinge" axis="1 0 0" limited="false"/>
+          <joint name="torso_rotation" damping="1" type="hinge" axis="0 1 0" limited="false"/>
+          <body name="torso" pos="0.021000000000000001 0.37602774999999999 0" quat="1 0 0 0"><inertial pos="-0.029999999999999999 0.31875199999999998 0" mass="26.829999999999998" fullinertia="1.4941044065675002 0.81178474999999994 1.4941044065675002 0 0 0"/>
+            <body name="clavicle_r" pos="0.0063200000000000001 0.0069029730000000006 0.027399749999999997" quat="1 0 0 0"><inertial pos="-0.0111 0.0064000000000000003 0.058237899999999995" mass="0.1898" fullinertia="0.00030794208637499999 0.00030794208637499999 4.8999999999999998e-05 0 0 0"/>
+            </body>
+            <body name="clavicle_l" pos="0.0063200000000000001 0.0069029730000000006 -0.027399749999999997" quat="1 0 0 0"><inertial pos="-0.0111 0.0064000000000000003 -0.058237899999999995" mass="0.1898" fullinertia="0.00030794208637499999 0.00030794208637499999 4.8999999999999998e-05 0 0 0"/>
+            </body>
+            <body name="scapula_r" pos="-0.017059159306081376 0.010070207486482026 0.17919256053746918" quat="0.97876891097132157 0.13511849338774734 0.14903603722295661 0.039276854119391504"><inertial pos="-0.046120000000000001 -0.031775589999999999 -0.049050925000000002" mass="0.70540000000000003" fullinertia="0.0010703094499999999 0.0010351547249999999 0.0010351547249999999 0 0 0"/>
+              <body name="glenohumeral_r_frame" pos="-0.0095499999999999995 -0.033867399999999999 0.0096704999999999985" quat="0.99026041190067726 -0.12443130730232503 -0.0077870987994219463 -0.061971989459944837">
+                <joint name="shoulder_flexion_r" stiffness="1" damping="0.10000000000000001" type="hinge" axis="0 0 1" limited="false"/>
+                <joint name="shoulder_abduction_r" stiffness="5" damping="0.10000000000000001" type="hinge" axis="-1 -0 -0" limited="false"/>
+                <joint name="shoulder_rotation_r" stiffness="5" damping="0.10000000000000001" type="hinge" axis="0 1 0" limited="false"/>
+                <body name="humerus_r" pos="0 0 0" quat="1 0 0 0"><inertial pos="0 -0.19662685000000002 0" mass="2.0325000000000002" fullinertia="0.016184329930695001 0.0041210000000000005 0.016184329930695001 0 0 0"/>
+                  <body name="elbow_r_frame" pos="0.013143999999999999 -0.3421821169 -0.0095949999999999994" quat="0.99344314055874861 -0.011062859394503568 0.11378371645689013 0.0012670785476234022">
+                    <joint name="elbow_flex_r" damping="0.01" type="hinge" axis="0 0 1" limited="false"/>
+                    <body name="ulna_r" pos="0 0 0" quat="0.99344314055874861 0.011062859394503568 -0.11378371645689013 -0.0012670785476234022"><inertial pos="0 -0.12866043749999997 0" mass="0.60750000000000004" fullinertia="0.0033322427312499998 0.00061799999999999984 0.0033322427312499998 0 0 0"/>
+                      <body name="radius_r" pos="-0.0067270000000000003 -0.013884972499999999 0.026082999999999999" quat="0.85252452205950568 0.029478545273834391 0.52185430187020487 0.0010209188562062387"><inertial pos="0 -0.12866043749999997 0" mass="0.60750000000000004" fullinertia="0.0033322427312499998 0.00061799999999999984 0.0033322427312499998 0 0 0"/>
+                        <body name="hand_r" pos="-0.0087969999999999993 -0.25176026749999997 0.013610000000000001" quat="1 0 0 0"><inertial pos="0 -0.068095000000000003 0" mass="0.45750000000000002" fullinertia="0.000892 0.00054699999999999996 0.00134 0 0 0"/>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+            <body name="scapula_l" pos="-0.017059159306081376 0.010070207486482026 -0.17919256053746918" quat="0.97876891097132157 -0.13511849338774734 -0.14903603722295661 0.039276854119391504"><inertial pos="-0.046120000000000001 -0.031775589999999999 0.049050925000000002" mass="0.70540000000000003" fullinertia="0.0010703094499999999 0.0010351547249999999 0.0010351547249999999 0 0 0"/>
+              <body name="glenohumeral_l_frame" pos="-0.0095499999999999995 -0.033867399999999999 -0.0096704999999999985" quat="0.99026041190067726 0.12443130730232503 0.0077870987994219463 -0.061971989459944837">
+                <joint name="shoulder_flexion_l" stiffness="1" damping="0.10000000000000001" type="hinge" axis="0 0 1" limited="false"/>
+                <joint name="shoulder_abduction_l" stiffness="5" damping="0.10000000000000001" type="hinge" axis="1 0 0" limited="false"/>
+                <joint name="shoulder_rotation_l" stiffness="5" damping="0.10000000000000001" type="hinge" axis="-0 -1 -0" limited="false"/>
+                <body name="humerus_l" pos="0 0 0" quat="1 0 0 0"><inertial pos="0 -0.19662685000000002 0" mass="2.0325000000000002" fullinertia="0.016184329930695001 0.0041210000000000005 0.016184329930695001 0 0 0"/>
+                  <body name="elbow_l_frame" pos="0.013143999999999999 -0.3421821169 0.0095949999999999994" quat="0.99344314055874861 0.011062859394503568 -0.11378371645689013 0.0012670785476234022">
+                    <joint name="elbow_flex_l" damping="0.01" type="hinge" axis="0 0 1" limited="false"/>
+                    <body name="ulna_l" pos="0 0 0" quat="0.99344314055874861 -0.011062859394503568 0.11378371645689013 -0.0012670785476234022"><inertial pos="0 -0.12866043749999997 0" mass="0.60750000000000004" fullinertia="0.0033322427312499998 0.00061799999999999984 0.0033322427312499998 0 0 0"/>
+                      <body name="radius_l" pos="-0.0067270000000000003 -0.013884972499999999 -0.026082999999999999" quat="0.85252452205950568 -0.029478545273834391 -0.52185430187020487 0.0010209188562062387"><inertial pos="0 -0.12866043749999997 0" mass="0.60750000000000004" fullinertia="0.0033322427312499998 0.00061799999999999984 0.0033322427312499998 0 0 0"/>
+                        <body name="hand_l" pos="-0.0087969999999999993 -0.25176026749999997 -0.013610000000000001" quat="1 0 0 0"><inertial pos="0 -0.068095000000000003 0" mass="0.45750000000000002" fullinertia="0.000892 0.00054699999999999996 0.00134 0 0 0"/>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <actuator>
+    <general name="mtp_angle_r_motor" joint="mtp_angle_r" dyntype="filter" dynprm="0.01" gaintype="fixed" gainprm="-80" biastype="affine" biasprm="40 0 0" ctrllimited="false" actlimited="false"/>
+    <general name="mtp_angle_l_motor" joint="mtp_angle_l" dyntype="filter" dynprm="0.01" gaintype="fixed" gainprm="-80" biastype="affine" biasprm="40 0 0" ctrllimited="false" actlimited="false"/>
+    <general name="u_glut_med1_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_med2_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_med3_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_min1_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_min2_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_min3_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_semimem_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_semiten_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_bifemlh_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_bifemsh_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_sar_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_add_long_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_add_brev_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_add_mag1_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_add_mag2_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_add_mag3_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_tfl_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_pect_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_grac_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_max1_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_max2_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_max3_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_iliacus_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_psoas_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_quad_fem_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_gem_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_peri_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_rect_fem_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_vas_med_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_vas_int_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_vas_lat_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_med_gas_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_lat_gas_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_soleus_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_tib_post_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_flex_dig_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_flex_hal_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_tib_ant_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_per_brev_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_per_long_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_per_tert_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_ext_dig_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_ext_hal_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_med1_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_med2_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_med3_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_min1_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_min2_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_min3_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_semimem_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_semiten_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_bifemlh_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_bifemsh_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_sar_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_add_long_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_add_brev_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_add_mag1_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_add_mag2_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_add_mag3_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_tfl_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_pect_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_grac_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_max1_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_max2_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_glut_max3_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_iliacus_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_psoas_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_quad_fem_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_gem_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_peri_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_rect_fem_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_vas_med_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_vas_int_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_vas_lat_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_med_gas_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_lat_gas_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_soleus_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_tib_post_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_flex_dig_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_flex_hal_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_tib_ant_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_per_brev_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_per_long_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_per_tert_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_ext_dig_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_ext_hal_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_ercspn_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_biceps_long_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_subscapularis_inf_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_intobl_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_ercspn_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_biceps_brevis_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_biceps_long_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_coracobrachialis_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_supraspinatus_ant_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_latissimus_sup_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_infraspinatus_inf_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_biceps_brevis_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_deltoideus_ant_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_infraspinatus_inf_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_deltoideus_med_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_infraspinatus_sup_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_extobl_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_deltoideus_post_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_coracobrachialis_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_triceps_long_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_deltoideus_med_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_deltoideus_ant_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_teres_major_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_latissimus_sup_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_subscapularis_inf_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_latissimus_med_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_subscapularis_sup_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_extobl_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_latissimus_med_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_deltoideus_post_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_teres_minor_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_latissimus_inf_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_pectoralis_major_sup_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_supraspinatus_post_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_pectoralis_major_sup_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_subscapularis_med_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_pectoralis_major_med_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_subscapularis_med_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_pectoralis_major_med_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_supraspinatus_post_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_pectoralis_major_inf_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_infraspinatus_sup_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_pectoralis_major_inf_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_supraspinatus_ant_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_teres_major_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_triceps_long_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_intobl_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_teres_minor_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_subscapularis_sup_r" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+    <general name="u_latissimus_inf_l" joint="hip_flexion_r" gainprm="0" biasprm="0 0 0" ctrllimited="false"/>
+  </actuator>
+</mujoco>

@@ -35,6 +35,7 @@ def test_every_registered_model_has_build_strategy():
         "myohand_r": BuildStrategy.RIGHT_HAND,
         "myohands": BuildStrategy.BOTH_HANDS,
         "myofullbody": BuildStrategy.FULLBODY,
+        "myofullbody_simple": BuildStrategy.FULLBODY_SIMPLE,
         "myolegs": BuildStrategy.LEGS_BODY,
         "myolegs26": BuildStrategy.LEGS26_BODY,
         "myotorso_abdomen": BuildStrategy.TORSO_ABDOMEN,
@@ -65,6 +66,7 @@ def test_generate_xml_files_writes_base_model_outputs(tmp_path, monkeypatch):
         "myolegs": Path("leg/myolegs.xml"),
         "myolegs26": Path("leg/myolegs26.xml"),
         "myofullbody": Path("myofullbody.xml"),
+        "myofullbody_simple": Path("myofullbody_simple.xml"),
     }
     spec_calls = []
     compile_calls = []

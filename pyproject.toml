@@ -24,6 +24,10 @@ dev = [
     "matplotlib>=3.7",
     "scipy>=1.10",
 ]
+warp = [
+    "warp-lang>=1.0",
+    "mujoco-warp>=3.4",
+]
 
 [build-system]
 requires = ["setuptools>=61.0"]
@@ -39,6 +43,10 @@ myo_sim = [
     "models/**/*",
     "build/*",
     "build/**/*",
+    "plugin/*.c",
+    "plugin/*.h",
+    "plugin/build.sh",
+    "plugin/myo_consts.h",
 ]
 
 [tool.pytest.ini_options]
