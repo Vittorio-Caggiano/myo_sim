@@ -139,6 +139,7 @@ def load_spec(
     name: str,
     collision_mode: "CollisionMode" = "full",
     inertia_floor: float | None = None,
+    hip_synergists: bool = False,
 ) -> "mujoco.MjSpec":
     """Build and return the uncompiled MjSpec for a named model.
 
@@ -168,6 +169,8 @@ def load_spec(
             https://github.com/MyoHub/myo_sim/issues/128. Only supported for
             MjSpec-composed models; ignored for packaged static-XML
             fragments.
+        hip_synergists: If True, add pectineus, quadratus femoris and gemelli on both
+            sides (appended after the existing actuators). Default False.
     """
     import mujoco
 
@@ -181,6 +184,7 @@ def load_spec(
             composed_name,
             collision_mode=collision_mode,
             inertia_floor=inertia_floor,
+            hip_synergists=hip_synergists,
         )
         return spec
 

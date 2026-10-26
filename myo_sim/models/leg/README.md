@@ -11,6 +11,10 @@ MuJoCo musculoskeletal model of the bilateral lower extremity, derived from Raja
 | Body segments | calcn_l, calcn_r, femur_l, femur_r, patella_l, patella_r, pelvis, talus_l, talus_r, tibia_l, tibia_r, toes_l, toes_r |
 | Primary joints | hip_flexion, hip_adduction, hip_rotation, knee_angle, ankle_angle, subtalar_angle, mtp_angle (bilateral) |
 
+## Optional deep hip muscles
+
+`load_spec("myolegs", hip_synergists=True)` (also for `myofullbody`) appends pectineus, quadratus femoris and gemelli on both sides (6 actuators, added after the existing ones so action indices of the default set do not change; the default model is unchanged). Geometry and strength come from the OpenSim Gait2392 model (Delp et al. 1990; Seth, Anderson, Delp; CC BY 3.0, <https://github.com/opensim-org/opensim-models>). Femur points are shared between Gait2392 and the Rajagopal frames used here; pelvis points were mapped with a similarity transform fitted on 27 points of 21 shared muscles (leave-one-muscle-out error about 11 mm). Check against Gait2392 over a gait-scale hip range (flexion -20..50, adduction +-15, rotation +-20 deg): normalised fibre ranges agree within about 0.1 and hip moment arms in the same sign and within 8 mm (mostly 2-5 mm). Popliteus, plantaris and the obturators are not included because no open source model with them was found.
+
 ## Reference model
 
 - **Source:** [Rajagopal Full-Body Musculoskeletal Model](https://simtk.org/projects/full_body)

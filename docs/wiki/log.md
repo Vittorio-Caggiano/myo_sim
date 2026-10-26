@@ -4,6 +4,10 @@ Append-only. Add entries at the top (most recent first). Do not edit past entrie
 
 ---
 
+## 2026-10-26 — Add opt-in deep hip muscles (pectineus, quadratus femoris, gemelli)
+Changed: `myo_sim/build/synergists.py`, `myo_sim/build/compose.py`, `myo_sim/__init__.py`, `myo_sim/models/leg/README.md`, `tests/test_hip_synergists.py`
+Why: Rajagopal-derived legs lack these hip muscles. Added from Gait2392 (CC BY 3.0) as `hip_synergists=True` so the default 416-actuator `myofullbody` and published checkpoints stay unchanged; parameters follow the normalised-range convention of the anatomical-parameter entries above.
+
 ## 2026-08-02 — Widen force-length curve bounds for muscles whose refit operating range outgrew them
 Changed: `myo_sim/models/arm/assets/myoarm_r_muscle.xml`, `myo_sim/models/torso/assets/myotorso_muscle.xml`
 Why: Restoring anatomical fiber length for 26 muscles (see the anatomical-parameter entries below) shifted their normalized operating range partly outside the shared default force-length curve bounds (`lmin`/`lmax`); widened bounds per muscle to contain the new range, respecting MuJoCo's `lmin < 1 < lmax` requirement.

@@ -664,6 +664,7 @@ def build_spec(
     model_name: str,
     collision_mode: CollisionMode = "full",
     inertia_floor: float | None = None,
+    hip_synergists: bool = False,
 ) -> mujoco.MjSpec:
     """Build and return the composed, uncompiled MjSpec for a registered model.
 
@@ -689,6 +690,9 @@ def build_spec(
             numerical conditioning of the mass matrix; pass
             ``inertia_floor=0.0001`` to restore that convention. See
             https://github.com/MyoHub/myo_sim/issues/128.
+        hip_synergists: If True, add pectineus, quadratus femoris and gemelli on both sides
+            (6 actuators appended after the existing ones; see ``myo_sim.build.synergists``).
+            Default False keeps the published actuator set.
 
     Returns:
         The composed MjSpec, ready for further edits or spec.compile().
@@ -705,6 +709,10 @@ def build_spec(
         raise ValueError(f"Unknown collision_mode: {collision_mode!r}. Expected 'full' or 'coarse'.")
     if inertia_floor is not None:
         apply_inertia_floor(spec, inertia_floor)
+    if hip_synergists:
+        from myo_sim.build.synergists import add_hip_synergists
+
+        add_hip_synergists(spec)
     return spec
 
 
