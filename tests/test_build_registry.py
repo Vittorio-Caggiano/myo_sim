@@ -99,6 +99,7 @@ def test_generate_xml_files_writes_base_model_outputs(tmp_path, monkeypatch):
         raise AssertionError("generate_xml_files should use MjSpec.to_xml(), not mj_saveLastXML()")
 
     monkeypatch.setattr(compose, "build_spec", fake_build_generated_model_spec, raising=False)
+    monkeypatch.setattr(compose, "attach_hm08_skin", lambda spec: None)
     monkeypatch.setattr(myo_sim, "load_model", fail_load_model)
     monkeypatch.setattr(compose.mujoco, "mj_saveLastXML", fail_save_last_xml)
 
@@ -201,6 +202,19 @@ def test_generated_myofullbody_uses_musclemimic_scene(tmp_path):
 
     assert 'material name="MatPlane"' in source
     assert 'mesh name="meshscene"' not in source
+
+
+def test_generated_fullbody_xml_includes_hm08_skin(tmp_path):
+    output_paths = compose.generate_xml_files(tmp_path)
+    targets = list(compose.GENERATE_XML_TARGETS)
+    for name in ("myofullbody", "myofullbody_simple"):
+        xml_path = output_paths[targets.index(name)]
+        source = xml_path.read_text()
+        assert 'skin name="hm08_skin"' in source, name
+        assert "myofullbody.skn" in source, name
+        model = mujoco.MjModel.from_xml_path(str(xml_path))
+        assert model.nskin == 1, name
+        assert model.nskinvert > 10_000, name
 
 
 def test_generated_xml_preserves_geom_collision_flags(tmp_path):

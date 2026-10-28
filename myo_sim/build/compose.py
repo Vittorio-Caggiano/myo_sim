@@ -63,6 +63,8 @@ GENERATE_XML_TARGETS: dict[str, Path] = {
     "myofullbody": Path("myofullbody.xml"),
     "myofullbody_simple": Path("myofullbody_simple.xml"),
 }
+# Composed full-body snapshots get the packaged HM08 ``.skn`` attached at generate time.
+GENERATE_SKIN_TARGETS: frozenset[str] = frozenset({"myofullbody", "myofullbody_simple"})
 
 TORSO_ABDOMEN_TENDONS_XML = ROOT / "torso" / "assets" / "myotorso_abdomen_tendon.xml"
 TORSO_ABDOMEN_MUSCLES_XML = ROOT / "torso" / "assets" / "myotorso_abdomen_muscle.xml"
@@ -859,7 +861,32 @@ def apply_compiled_geom_collision_flags(root: ET.Element, model: mujoco.MjModel)
         geom.set("conaffinity", str(int(model.geom_conaffinity[geom_id])))
 
 
-def sanitize_spec_xml(xml: str, asset_dir: str | None = None, model: mujoco.MjModel | None = None) -> str:
+def relativize_skin_files(root: ET.Element, output_path: Path) -> None:
+    """Rewrite absolute ``<skin file>`` paths to paths relative to ``output_path``.
+
+    Out-of-tree destinations (e.g. pytest ``tmp_path``) keep an absolute path so
+    ``MjModel.from_xml_path`` can still resolve the packaged HM08 ``.skn``.
+    """
+    out_dir = output_path.parent.resolve()
+    for skin in root.iter("skin"):
+        file_attr = skin.get("file")
+        if not file_attr:
+            continue
+        path = Path(file_attr)
+        if not path.is_absolute():
+            continue
+        resolved = path.resolve()
+        rel = os.path.relpath(resolved, out_dir)
+        skin.set("file", rel if not rel.startswith(f"..{os.sep}") and rel != ".." else str(resolved))
+
+
+def sanitize_spec_xml(
+    xml: str,
+    asset_dir: str | None = None,
+    model: mujoco.MjModel | None = None,
+    *,
+    output_path: Path | None = None,
+) -> str:
     root = ET.fromstring(xml)
     if asset_dir is not None:
         compiler = root.find("compiler")
@@ -874,15 +901,24 @@ def sanitize_spec_xml(xml: str, asset_dir: str | None = None, model: mujoco.MjMo
     enable_floor_collision(root)
     if model is not None:
         apply_compiled_geom_collision_flags(root, model)
+    if output_path is not None:
+        relativize_skin_files(root, output_path)
     ET.indent(root, space="  ")
     return ET.tostring(root, encoding="unicode") + "\n"
+
+
+def attach_hm08_skin(spec: mujoco.MjSpec) -> None:
+    """Attach the packaged HM08 full-body skin to a composed full-body spec."""
+    from myo_sim.skin import attach_skin
+
+    attach_skin(spec, name="hm08_skin")
 
 
 def write_spec_xml(spec: mujoco.MjSpec, output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     model = spec.compile()
     asset_dir = os.path.relpath(ROOT, output_path.parent)
-    output_path.write_text(sanitize_spec_xml(spec.to_xml(), asset_dir=asset_dir, model=model))
+    output_path.write_text(sanitize_spec_xml(spec.to_xml(), asset_dir=asset_dir, model=model, output_path=output_path))
 
 
 def generate_xml_files(output_root: Path = ROOT) -> list[Path]:
@@ -891,6 +927,8 @@ def generate_xml_files(output_root: Path = ROOT) -> list[Path]:
     for model_name, rel_path in GENERATE_XML_TARGETS.items():
         output_path = output_root / rel_path
         spec = build_spec(model_name)
+        if model_name in GENERATE_SKIN_TARGETS:
+            attach_hm08_skin(spec)
         write_spec_xml(spec, output_path)
         output_paths.append(output_path)
     return output_paths

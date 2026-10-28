@@ -29,6 +29,9 @@ This generates:
 - `myo_sim/models/leg/myolegs.xml`
 - `myo_sim/models/leg/myolegs26.xml`
 - `myo_sim/models/myofullbody.xml`
+- `myo_sim/models/myofullbody_simple.xml`
+
+`myofullbody` and `myofullbody_simple` also attach the packaged HM08 skin (`myo_sim/models/skins/hm08/myofullbody.skn`) before export, so the generated XML includes a `<skin name="hm08_skin" ...>` entry. Procedural attach for other models remains available via `myo_sim.skin.attach_skin` / `load_model_with_skin`.
 
 Generation writes sanitized `MjSpec.to_xml()` output after compiling each spec once for validation. Treat these XML files as generated snapshots for GUI viewing and compatibility; source edits belong in component XML files and `compose.py`.
 
