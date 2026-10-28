@@ -183,11 +183,11 @@
     <mesh name="3midph_r" file="meshes/3midph.stl" />
     <mesh name="3distph_r" file="meshes/3distph.stl" />
     <mesh name="4mc_r" file="meshes/4mc.stl" />
-    <mesh name="4proxph_r" file="meshes/4proxph.stl" />
+    <mesh name="4proxph_r" content_type="model/stl" file="meshes/4proxph.stl" />
     <mesh name="4midph_r" file="meshes/4midph.stl" />
     <mesh name="4distph_r" file="meshes/4distph.stl" />
-    <mesh name="5mc_r" file="meshes/5mc.stl" />
-    <mesh name="5proxph_r" file="meshes/5proxph.stl" />
+    <mesh name="5mc_r" content_type="model/stl" file="meshes/5mc.stl" />
+    <mesh name="5proxph_r" content_type="model/stl" file="meshes/5proxph.stl" />
     <mesh name="5midph_r" file="meshes/5midph.stl" />
     <mesh name="5distph_r" file="meshes/5distph.stl" />
     <mesh name="thorax_l" content_type="model/stl" file="meshes/thorax.stl" scale="1 1 -1" />
@@ -216,11 +216,11 @@
     <mesh name="3midph_l" content_type="model/stl" file="meshes/3midph.stl" scale="1 1 -1" />
     <mesh name="3distph_l" content_type="model/stl" file="meshes/3distph.stl" scale="1 1 -1" />
     <mesh name="4mc_l" content_type="model/stl" file="meshes/4mc.stl" scale="1 1 -1" />
-    <mesh name="4proxph_l" content_type="model/stl" file="meshes/4proxph.stl" scale="1 1 -1" />
+    <mesh name="4proxph_l" file="meshes/4proxph.stl" scale="1 1 -1" />
     <mesh name="4midph_l" content_type="model/stl" file="meshes/4midph.stl" scale="1 1 -1" />
     <mesh name="4distph_l" content_type="model/stl" file="meshes/4distph.stl" scale="1 1 -1" />
-    <mesh name="5mc_l" content_type="model/stl" file="meshes/5mc.stl" scale="1 1 -1" />
-    <mesh name="5proxph_l" content_type="model/stl" file="meshes/5proxph.stl" scale="1 1 -1" />
+    <mesh name="5mc_l" file="meshes/5mc.stl" scale="1 1 -1" />
+    <mesh name="5proxph_l" file="meshes/5proxph.stl" scale="1 1 -1" />
     <mesh name="5midph_l" content_type="model/stl" file="meshes/5midph.stl" scale="1 1 -1" />
     <mesh name="5distph_l" content_type="model/stl" file="meshes/5distph.stl" scale="1 1 -1" />
     <mesh name="r_pelvis" file="meshes/r_pelvis.stl" />
@@ -1353,8 +1353,6 @@
                                               <camera name="hand_side_inter" pos="0.5 -0.3 0" quat="0.500398 0.5 0.5 0.499602" />
                                               <camera name="hand_side_exter" pos="-0.5 -0.3 0" quat="0.500398 0.5 -0.5 -0.499602" />
                                               <body name="lunate_r" childclass="myoarm_wrist" pos="0.018 -0.242 0.025">
-                                                <joint name="deviation_r" pos="0 0 0" axis="0 0 1" range="-0.174533 0.436332" damping="0.25" />
-                                                <joint name="flexion_r" pos="0 0 0" axis="1 0 0" range="-0.785398 0.785398" damping="0.25" />
                                                 <geom name="lunate_r" type="mesh" mesh="lunate_r" contype="0" conaffinity="0" />
                                                 <geom name="WristExtensor_wrap" class="myoarm_wrap" size="0.008 0.02" pos="0.0007 0 0.003" quat="0.807649 -0.0333177 0.588355 0.0207694" type="cylinder" contype="0" conaffinity="0" />
                                                 <geom name="WristFlexor_wrap" class="myoarm_wrap" size="0.007 0.02" pos="0 -0.01 -0.004" quat="0.807649 -0.0333177 0.588355 0.0207694" type="cylinder" contype="0" conaffinity="0" />
@@ -1427,8 +1425,6 @@
                                                     <camera name="plam_lookat" pos="-0.011 -0.06 -0.5" quat="0.000796327 0 1 0" />
                                                     <body name="firstmc_r" pos="0.0072 -0.0054 -0.0025">
                                                       <inertial pos="0.0078 -0.0147 -0.006" quat="0.276978 0.738061 -0.396601 0.470379" mass="0.016" diaginertia="1.51216e-06 1.48498e-06 2.12861e-07" />
-                                                      <joint name="cmc_flexion" pos="0 0 0" axis="-0.042399 -0.665286 0.745384" range="-0.78 0.7" />
-                                                      <joint name="cmc_abduction" pos="0 0 0" axis="0.495557 0.731736 0.467959" range="-0.5 0.78" />
                                                       <geom name="1mcskin_r" class="myohand_coll" size="0.0095 0.0205608" pos="0.00725 -0.0126 -0.00485" quat="0.831202 -0.48566 -0.270624 0" material="MatSkin" contype="1" conaffinity="0" />
                                                       <geom name="1mc_r" type="mesh" mesh="1mc_r" contype="0" conaffinity="0" />
                                                       <geom name="MPthumb_wrap" class="myoarm_wrap" size="0.0085 0.01" pos="0.0177 -0.0305 -0.0143" quat="0.904577 0.123988 0.114414 -0.391506" type="cylinder" contype="0" conaffinity="0" />
@@ -1446,7 +1442,6 @@
                                                       <site name="MPthumb_site_FPL_side_r" pos="0.0177 -0.0305 -0.0143" />
                                                       <body name="proximal_thumb_r" pos="0.0165 -0.0292 -0.0127">
                                                         <inertial pos="0.0096 -0.0163 -0.0063" quat="0.399544 0.661622 0.577435 0.26304" mass="0.0079" diaginertia="4.2e-07 4.2e-07 4.2e-07" />
-                                                        <joint name="mp_flexion_r" pos="0 0 0" axis="-0.084295 -0.203488 0.975442" range="-0.785398 0.698132" />
                                                         <geom name="proximal_thumb_coll_r" class="myohand_coll" size="0.0085 0.0155629" pos="0.007 -0.01295 -0.00505" quat="0.813784 -0.511257 -0.276355 0" material="MatSkin" contype="1" conaffinity="0" />
                                                         <geom name="thumbprox" type="mesh" mesh="thumbprox_r" contype="0" conaffinity="0" />
                                                         <geom name="IPthumb_wrap" class="myoarm_wrap" size="0.0045 0.005" pos="0.0121 -0.0302 -0.0096" quat="0.987395 0.151909 -0.000296583 0.044437" type="cylinder" contype="0" conaffinity="0" />
@@ -1459,7 +1454,6 @@
                                                         <site name="IPthumb_site_FPL_side_r" pos="0.00820158 -0.028993 -0.00586527" />
                                                         <body name="distal_thumb_r" pos="0.014 -0.0259 -0.0101">
                                                           <inertial pos="0.0056 -0.0104 -0.0044" quat="0.424708 0.820473 -0.17592 0.339851" mass="0.003" diaginertia="6e-08 5e-08 2e-08" />
-                                                          <joint name="ip_flexion_r" pos="0 0 0" axis="-0.050102 -0.479623 0.876043" range="-1.309 0.436332" />
                                                           <geom name="distal_thumb_coll_r" class="myohand_coll" size="0.0065 0.0108743" pos="0.005 -0.009 -0.0035" quat="0.812976 -0.509019 -0.282788 0" material="MatSkin" contype="1" conaffinity="0" />
                                                           <geom name="thumbdist_r" type="mesh" mesh="thumbdist_r" contype="0" conaffinity="0" />
                                                           <geom name="distal_thumb_coll_2_r" class="myohand_coll" size="0.007 0.0055 0.002" pos="0.015 -0.018 -0.007" quat="0.466903 0.531065 0.466454 0.531406" type="ellipsoid" material="MatSkin" rgba="1 1 1 0.8" contype="1" conaffinity="0" />
@@ -1506,8 +1500,6 @@
                                                     <site name="2ndmcp_ellipsoid_site_RI2_side_r" pos="-0.0107522 -0.0332733 0.00473501" />
                                                     <body name="2proxph_r" pos="0.003501 -0.028243 0.00362">
                                                       <inertial pos="0 0 0" mass="0.01" diaginertia="0.0001 0.0001 0.0001" />
-                                                      <joint name="mcp2_flexion_r" pos="0 0 0" axis="0.995013 0.09975 0" range="0 1.5708" />
-                                                      <joint name="mcp2_abduction_r" pos="0 0 0" axis="-0.054999 0.085899 0.994785" range="-0.261799 0.261799" />
                                                       <geom name="proxph2_coll_r" class="myohand_coll" size="0.009 0.02" pos="0.004 -0.021 0.00362" quat="0.743646 0.641407 0.170361 -0.0810239" material="MatSkin" contype="1" conaffinity="0" />
                                                       <geom name="2proxph_r" type="mesh" mesh="2proxph_r" contype="0" conaffinity="0" />
                                                       <geom name="Secondpm_wrap" class="myoarm_wrap" size="0.0042 0.005" pos="0.0075 -0.0407 0.0061" quat="0.731792 0.0341239 -0.68058 0.0113202" type="cylinder" contype="0" conaffinity="0" />
@@ -1530,7 +1522,6 @@
                                                       <site name="Secondpm_site_UI_UB2_side_r" pos="0.0147187 -0.0418367 0.0110691" />
                                                       <body name="midph2_r" pos="0.00751 -0.041273 0.007326">
                                                         <inertial pos="0 0 0" mass="0.003" diaginertia="0.0001 0.0001 0.0001" />
-                                                        <joint name="pm2_flexion_r" pos="0 0 0" axis="0.97517 0.0998334 -0.197677" range="0 1.5708" />
                                                         <geom name="midph2_coll_r" class="myohand_coll" size="0.008 0.012" pos="0.0013 -0.012 0" quat="0.72705 0.660674 0.168783 -0.0801334" material="MatSkin" contype="1" conaffinity="0" />
                                                         <geom name="2midph_r" type="mesh" mesh="2midph_r" contype="0" conaffinity="0" />
                                                         <geom name="Secondmd_wrap" class="myoarm_wrap" size="0.003 0.005" pos="0.0036 -0.0243 0.0003" quat="0.749819 -0.0209733 -0.656264 0.0815428" type="cylinder" contype="0" conaffinity="0" />
@@ -1549,7 +1540,6 @@
                                                         <site name="Secondmd_site_EIP_side_r" pos="0.00435202 -0.0234011 0.00618443" />
                                                         <body name="distph2_r" pos="0.003333 -0.024888 0.00122">
                                                           <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                          <joint name="md2_flexion_r" pos="0 0 0" axis="0.995004 0.0998334 0" range="0 1.5708" />
                                                           <geom name="distph2_coll_r" class="myohand_coll" size="0.007 0.008" pos="0.001 -0.008 0" quat="0.72705 0.660674 0.168783 -0.0801334" material="MatSkin" contype="1" conaffinity="0" />
                                                           <geom name="2distph_r" type="mesh" mesh="2distph_r" contype="0" conaffinity="0" />
                                                           <geom name="distph2_coll_2_r" class="myohand_coll" size="0.005 0.008 0.002" pos="0.003 -0.018 0.0055" quat="0.990593 0.103155 0.0421185 0.0794378" type="ellipsoid" material="MatSkin" rgba="1 1 1 0.8" contype="1" conaffinity="0" />
@@ -1594,8 +1584,6 @@
                                                     <site name="3rdmcp_ellipsoid_site_LU_RB3_side_r" pos="0 0 0" />
                                                     <body name="3proxph_r" pos="0.00024 -0.02629 0.001778">
                                                       <inertial pos="0 0 0" mass="0.01" diaginertia="0.0001 0.0001 0.0001" />
-                                                      <joint name="mcp3_flexion_r" pos="0 0 0" axis="0.980067 0 0.198669" range="0 1.5708" />
-                                                      <joint name="mcp3_abduction_r" pos="0 0 0" axis="-0.198669 0 0.980067" range="-0.261799 0.261799" />
                                                       <geom name="proxph3_coll_r" class="myohand_coll" size="0.009 0.022" pos="0.001 -0.022 0.004" quat="0.723001 0.668192 0.134859 -0.112259" material="MatSkin" contype="1" conaffinity="0" />
                                                       <geom name="3proxph_r" type="mesh" mesh="3proxph_r" contype="0" conaffinity="0" />
                                                       <geom name="Thirdpm_wrap" class="myoarm_wrap" size="0.004 0.005" pos="0.0017 -0.0439 0.005" quat="0.700673 0.00645453 -0.712452 0.0377825" type="cylinder" contype="0" conaffinity="0" />
@@ -1615,7 +1603,6 @@
                                                       <site name="Thirdpm_site_UI_UB3_side_r" pos="0.00155575 -0.04355 0.012991" />
                                                       <body name="midph3_r" pos="0.00165 -0.044211 0.00623">
                                                         <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                        <joint name="pm3_flexion_r" pos="0 0 0" axis="1 0 0" range="0 1.5708" />
                                                         <geom name="midph3_coll_r" class="myohand_coll" size="0.008 0.014" pos="0.0012 -0.014 0" quat="0.706847 0.684988 0.142874 -0.103663" material="MatSkin" contype="1" conaffinity="0" />
                                                         <geom name="3midph_r" type="mesh" mesh="3midph_r" contype="0" conaffinity="0" />
                                                         <geom name="Thirdmd_wrap" class="myoarm_wrap" size="0.003 0.005" pos="0.0014 -0.0289 0.0012" quat="0.708186 -0.0221627 -0.701515 0.0765368" type="cylinder" contype="0" conaffinity="0" />
@@ -1629,7 +1616,6 @@
                                                         <site name="Thirdmd_site_EDC3_side_r" pos="0.00142423 -0.028063 0.00714128" />
                                                         <body name="distph3_r" pos="0.001365 -0.029047 0.001954">
                                                           <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                          <joint name="md3_flexion" pos="0 0 0" axis="1 0 0" range="0 1.5708" />
                                                           <geom name="distph3_coll_r" class="myohand_coll" size="0.007 0.008" pos="0.0013 -0.009 -0.002" quat="0.696489 0.717132 0.0174159 0.017932" material="MatSkin" contype="1" conaffinity="0" />
                                                           <geom name="3distph_r" type="mesh" mesh="3distph_r" contype="0" conaffinity="0" />
                                                           <geom name="distph3_coll_2_r" class="myohand_coll" size="0.0055 0.008 0.002" pos="0.002 -0.019 0.003" quat="0.995004 0.0998334 0 0" type="ellipsoid" material="MatSkin" rgba="1 1 1 0.8" contype="1" conaffinity="0" />
@@ -1659,8 +1645,6 @@
                                                     <site name="4thmcp_ellipsoid_site_UI_UB4_side_r" pos="-0.0107758 -0.0261555 -0.00498369" />
                                                     <body name="4proxph_r" pos="-0.00183 -0.023689 -0.000173">
                                                       <inertial pos="0 0 0" mass="0.01" diaginertia="0.0001 0.0001 0.0001" />
-                                                      <joint name="mcp4_flexion_r" pos="0 0 0" axis="0.900447 0 0.434966" range="0 1.5708" />
-                                                      <joint name="mcp4_abduction_r" pos="0 0 0" axis="-0.434966 0 0.900447" range="-0.261799 0.261799" />
                                                       <geom name="proxph4_coll_r" class="myohand_coll" size="0.0085 0.018" pos="-0.001 -0.02 0.0008" quat="0.706822 0.70626 -0.028288 -0.0282655" material="MatSkin" contype="1" conaffinity="0" />
                                                       <geom name="4proxph_r" type="mesh" mesh="4proxph_r" contype="0" conaffinity="0" />
                                                       <geom name="Fourthpm_wrap" class="myoarm_wrap" size="0.004 0.005" pos="-0.0033 -0.0401 -0.0001" quat="0.35623 -0.660837 -0.527455 0.397727" type="cylinder" contype="0" conaffinity="0" />
@@ -1679,7 +1663,6 @@
                                                       <site name="Fourthpm_site_UI_UB4_side_r" pos="-0.0089 -0.0388 0.0018" />
                                                       <body name="midph4_r" pos="-0.003528 -0.040255 0.001345">
                                                         <inertial pos="0 0 0" mass="0.003" diaginertia="0.0001 0.0001 0.0001" />
-                                                        <joint name="pm4_flexion" pos="0 0 0" axis="0.921061 0 0.389418" range="0 1.5708" />
                                                         <geom name="midph4_coll_r" class="myohand_coll" size="0.0075 0.01" pos="0 -0.012 -0.001" quat="0.703282 0.709785 -0.0281463 -0.0284066" material="MatSkin" contype="1" conaffinity="0" />
                                                         <geom name="4midph_r" type="mesh" mesh="4midph_r" contype="0" conaffinity="0" />
                                                         <geom name="Fourthmd_wrap" class="myoarm_wrap" size="0.003 0.005" pos="-0.0021 -0.0247 -0.0001" quat="0.524748 -0.0852157 -0.846667 0.0230782" type="cylinder" contype="0" conaffinity="0" />
@@ -1693,7 +1676,6 @@
                                                         <site name="Fourthmd_site_EDC4_side_r" pos="-0.0021 -0.0247 0.0061" rgba="1 0 0 1" />
                                                         <body name="distph4_r" pos="-0.002317 -0.024789 0.000563">
                                                           <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                          <joint name="md4_flexion_r" pos="0 0 0" axis="0.825336 0 0.564642" range="0 1.5708" />
                                                           <geom name="distph4_coll_r" class="myohand_coll" size="0.0068 0.008" pos="0 -0.01 -0.002" quat="0.695836 0.71646 -0.0348208 -0.0358529" material="MatSkin" contype="1" conaffinity="0" />
                                                           <geom name="4distph_r" type="mesh" mesh="4distph_r" contype="0" conaffinity="0" />
                                                           <geom name="distph4_coll_2_r" class="myohand_coll" size="0.005 0.008 0.002" pos="-0.004 -0.019 0.003" quat="0.964072 0.0967298 -0.246168 -0.0246992" type="ellipsoid" material="MatSkin" rgba="1 1 1 0.8" contype="1" conaffinity="0" />
@@ -1726,8 +1708,6 @@
                                                     <site name="5thmcp_ellipsoid_site_UI_UB5_side_r" pos="0.00407413 -0.0225573 -0.0142669" />
                                                     <body name="5proxph_r" pos="-0.001597 -0.021431 -0.001496">
                                                       <inertial pos="0 0 0" mass="0.005" diaginertia="0.0001 0.0001 0.0001" />
-                                                      <joint name="mcp5_flexion_r" pos="0 0 0" axis="0.825336 0 0.564642" range="0 1.5708" />
-                                                      <joint name="mcp5_abduction_r" pos="0 0 0" axis="-0.564642 0 0.825336" range="-0.261799 0.261799" />
                                                       <geom name="5proxph_coll_r" class="myohand_coll" size="0.008 0.016" pos="-0.003 -0.018 -0.002" quat="0.666629 0.743713 -0.0333592 -0.0372166" material="MatSkin" contype="1" conaffinity="0" />
                                                       <geom name="5proxph_r" type="mesh" mesh="5proxph_r" contype="0" conaffinity="0" />
                                                       <geom name="Fifthpm_wrap" class="myoarm_wrap" size="0.004 0.005" pos="-0.0046 -0.0349 -0.0042" quat="0.4295 -0.0398509 -0.90052 -0.0548241" type="cylinder" contype="0" conaffinity="0" />
@@ -1748,7 +1728,6 @@
                                                       <site name="Fifthpm_site_UI_UB5_side_r" pos="-0.0107 -0.0359 -0.0032" />
                                                       <body name="midph5_r" pos="-0.005279 -0.035563 -0.002879">
                                                         <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                        <joint name="pm5_flexion_r" pos="0 0 0" axis="0.825336 0 0.564642" range="0 1.5708" />
                                                         <geom name="5midph_coll_r" class="myohand_coll" size="0.007 0.009" pos="-0.001 -0.011 -0.0025" quat="0.666262 0.743303 -0.0400237 -0.0446518" material="MatSkin" contype="1" conaffinity="0" />
                                                         <geom name="5midph_r" type="mesh" mesh="5midph_r" contype="0" conaffinity="0" />
                                                         <geom name="Fifthmd_wrap" class="myoarm_wrap" size="0.003 0.005" pos="-0.0025 -0.0205 -0.0025" quat="0.35929 -0.0253303 -0.929016 -0.0848458" type="cylinder" contype="0" conaffinity="0" />
@@ -1763,7 +1742,6 @@
                                                         <site name="EDM-P8_r" pos="-0.002 -0.003 0.003" />
                                                         <body name="distph5_r" pos="-0.002871 -0.020677 -0.002243">
                                                           <inertial pos="0 0 0" mass="0.001" diaginertia="0.0001 0.0001 0.0001" />
-                                                          <joint name="md5_flexion_r" pos="0 0 0" axis="0.867728 -0.149438 0.474042" range="0 1.5708" />
                                                           <geom name="5distph_coll_r" class="myohand_coll" size="0.006 0.007" pos="-0.0002 -0.009 -0.002" quat="0.677709 0.73363 -0.0339137 -0.0367121" material="MatSkin" contype="1" conaffinity="0" />
                                                           <geom name="5distph" type="mesh" mesh="5distph_r" contype="0" conaffinity="0" />
                                                           <geom name="5distph_coll_2_r" class="myohand_coll" size="0.0045 0.006 0.002" pos="-0.005 -0.018 0" quat="0.91646 0.0919527 -0.387473 -0.038877" type="ellipsoid" material="MatSkin" rgba="1 1 1 0.8" contype="1" conaffinity="0" />
@@ -2142,8 +2120,6 @@
                                               <camera name="hand_side_inter_l" pos="0.5 -0.3 0" quat="0.500398 -0.5 -0.5 0.499602" />
                                               <camera name="hand_side_exter_l" pos="-0.5 -0.3 0" quat="0.500398 -0.5 0.5 -0.499602" />
                                               <body name="lunate_l" childclass="myoarm_wrist" pos="0.018 -0.242 -0.025">
-                                                <joint name="deviation_l" pos="0 0 0" axis="0 0 1" range="-0.174533 0.436332" damping="0.25" />
-                                                <joint name="flexion_l" pos="0 0 0" axis="-1 0 0" range="-0.785398 0.785398" damping="0.25" />
                                                 <geom name="lunate_l" type="mesh" mesh="lunate_l" contype="0" conaffinity="0" />
                                                 <geom name="WristExtensor_wrap_l" class="myoarm_wrap" size="0.008 0.02" pos="0.0007 0 -0.003" quat="0.807649 0.0333177 -0.588355 0.0207694" type="cylinder" contype="0" conaffinity="0" />
                                                 <geom name="WristFlexor_wrap_l" class="myoarm_wrap" size="0.007 0.02" pos="0 -0.01 0.004" quat="0.807649 0.0333177 -0.588355 0.0207694" type="cylinder" contype="0" conaffinity="0" />
@@ -2216,8 +2192,6 @@
                                                     <camera name="plam_lookat_l" pos="-0.011 -0.06 0.5" quat="0.000796327 0 -1 0" />
                                                     <body name="firstmc_l" pos="0.0072 -0.0054 0.0025">
                                                       <inertial pos="0.0078 -0.0147 0.006" quat="0.396601 0.470379 -0.276978 0.738061" mass="0.016" diaginertia="1.51216e-06 1.48498e-06 2.12861e-07" />
-                                                      <joint name="cmc_flexion_l" pos="0 0 0" axis="0.042399 0.665286 0.745384" range="-0.78 0.7" />
-                                                      <joint name="cmc_abduction_l" pos="0 0 0" axis="-0.495557 -0.731736 0.467959" range="-0.5 0.78" />
                                                       <geom name="1mcskin_l" class="myohand_coll" size="0.0095 0.0205608" pos="0.00725 -0.0126 0.00485" quat="0.55597 -0.726085 -0.404596 0" contype="1" conaffinity="0" />
                                                       <geom name="1mc_l" type="mesh" mesh="1mc_l" contype="0" conaffinity="0" />
                                                       <geom name="MPthumb_wrap_l" class="myoarm_wrap" size="0.0085 0.01" pos="0.0177 -0.0305 0.0143" quat="0.904577 -0.123988 -0.114414 -0.391506" type="cylinder" contype="0" conaffinity="0" />
@@ -2235,7 +2209,6 @@
                                                       <site name="MPthumb_site_FPL_side_l" pos="0.0177 -0.0305 0.0143" />
                                                       <body name="proximal_thumb_l" pos="0.0165 -0.0292 0.0127">
                                                         <inertial pos="0.0096 -0.0163 0.0063" quat="0.661622 0.399544 0.26304 0.577435" mass="0.0079" diaginertia="4.2e-07 4.2e-07 4.2e-07" />
-                                                        <joint name="mp_flexion_l" pos="0 0 0" axis="0.084295 0.203488 0.975442" range="-0.785398 0.698132" />
                                                         <geom name="proximal_thumb_coll_l" class="myohand_coll" size="0.0085 0.0155629" pos="0.007 -0.01295 0.00505" quat="0.581167 -0.715891 -0.386968 0" contype="1" conaffinity="0" />
                                                         <geom name="thumbprox_l" type="mesh" mesh="thumbprox_l" contype="0" conaffinity="0" />
                                                         <geom name="IPthumb_wrap_l" class="myoarm_wrap" size="0.0045 0.005" pos="0.0121 -0.0302 0.0096" quat="0.987395 -0.151909 0.000296583 0.044437" type="cylinder" contype="0" conaffinity="0" />
@@ -2248,7 +2221,6 @@
                                                         <site name="IPthumb_site_FPL_side_l" pos="0.00820158 -0.028993 0.00586527" />
                                                         <body name="distal_thumb_l" pos="0.014 -0.0259 0.0101">
                                                           <inertial pos="0.0056 -0.0104 0.0044" quat="0.820473 0.424708 0.339851 -0.17592" mass="0.003" diaginertia="6e-08 5e-08 2e-08" />
-                                                          <joint name="ip_flexion_l" pos="0 0 0" axis="0.050102 0.479623 0.876043" range="-1.309 0.436332" />
                                                           <geom name="distal_thumb_coll_l" class="myohand_coll" size="0.0065 0.0108743" pos="0.005 -0.009 0.0035" quat="0.582297 -0.710669 -0.394816 0" contype="1" conaffinity="0" />
                                                           <geom name="thumbdist_l" type="mesh" mesh="thumbdist_l" contype="0" conaffinity="0" />
                                                           <geom name="distal_thumb_coll_2_l" class="myohand_coll" size="0.007 0.0055 0.002" pos="0.015 -0.018 0.007" quat="0.466903 -0.531065 -0.466454 0.531406" type="ellipsoid" rgba="1 1 1 0.8" contype="1" conaffinity="0" />
@@ -2295,8 +2267,6 @@
                                                     <site name="2ndmcp_ellipsoid_site_RI2_side_l" pos="-0.0107522 -0.0332733 -0.00473501" />
                                                     <body name="2proxph_l" pos="0.003501 -0.028243 -0.00362">
                                                       <inertial pos="0 0 0" mass="0.01" diaginertia="0.0001 0.0001 0.0001" />
-                                                      <joint name="mcp2_flexion_l" pos="0 0 0" axis="-0.995013 -0.09975 0" range="0 1.5708" />
-                                                      <joint name="mcp2_abduction_l" pos="0 0 0" axis="0.054999 -0.085899 0.994785" range="-0.261799 0.261799" />
                                                       <geom name="proxph2_coll_l" class="myohand_coll" size="0.009 0.02" pos="0.004 -0.021 -0.00362" quat="0.743646 -0.641407 -0.170361 -0.0810239" contype="1" conaffinity="0" />
                                                       <geom name="2proxph_l" type="mesh" mesh="2proxph_l" contype="0" conaffinity="0" />
                                                       <geom name="Secondpm_wrap_l" class="myoarm_wrap" size="0.0042 0.005" pos="0.0075 -0.0407 -0.0061" quat="0.731792 -0.0341239 0.68058 0.0113202" type="cylinder" contype="0" conaffinity="0" />
@@ -2319,7 +2289,6 @@
                                                       <site name="Secondpm_site_UI_UB2_side_l" pos="0.0147187 -0.0418367 -0.0110691" />
                                                       <body name="midph2_l" pos="0.00751 -0.041273 -0.007326">
                                                         <inertial pos="0 0 0" mass="0.003" diaginertia="0.0001 0.0001 0.0001" />
-                                                        <joint name="pm2_flexion_l" pos="0 0 0" axis="-0.97517 -0.0998334 -0.197677" range="0 1.5708" />
                                                         <geom name="midph2_coll_l" class="myohand_coll" size="0.008 0.012" pos="0.0013 -0.012 0" quat="0.72705 -0.660674 -0.168783 -0.0801334" contype="1" conaffinity="0" />
                                                         <geom name="2midph_l" type="mesh" mesh="2midph_l" contype="0" conaffinity="0" />
                                                         <geom name="Secondmd_wrap_l" class="myoarm_wrap" size="0.003 0.005" pos="0.0036 -0.0243 -0.0003" quat="0.749819 0.0209733 0.656264 0.0815428" type="cylinder" contype="0" conaffinity="0" />
@@ -2338,7 +2307,6 @@
                                                         <site name="Secondmd_site_EIP_side_l" pos="0.00435202 -0.0234011 -0.00618443" />
                                                         <body name="distph2_l" pos="0.003333 -0.024888 -0.00122">
                                                           <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                          <joint name="md2_flexion_l" pos="0 0 0" axis="-0.995004 -0.0998334 0" range="0 1.5708" />
                                                           <geom name="distph2_coll_l" class="myohand_coll" size="0.007 0.008" pos="0.001 -0.008 0" quat="0.72705 -0.660674 -0.168783 -0.0801334" contype="1" conaffinity="0" />
                                                           <geom name="2distph_l" type="mesh" mesh="2distph_l" contype="0" conaffinity="0" />
                                                           <geom name="distph2_coll_2_l" class="myohand_coll" size="0.005 0.008 0.002" pos="0.003 -0.018 -0.0055" quat="0.990593 -0.103155 -0.0421185 0.0794378" type="ellipsoid" rgba="1 1 1 0.8" contype="1" conaffinity="0" />
@@ -2383,8 +2351,6 @@
                                                     <site name="3rdmcp_ellipsoid_site_LU_RB3_side_l" pos="0 0 0" />
                                                     <body name="3proxph_l" pos="0.00024 -0.02629 -0.001778">
                                                       <inertial pos="0 0 0" mass="0.01" diaginertia="0.0001 0.0001 0.0001" />
-                                                      <joint name="mcp3_flexion_l" pos="0 0 0" axis="-0.980067 0 0.198669" range="0 1.5708" />
-                                                      <joint name="mcp3_abduction_l" pos="0 0 0" axis="0.198669 0 0.980067" range="-0.261799 0.261799" />
                                                       <geom name="proxph3_coll_l" class="myohand_coll" size="0.009 0.022" pos="0.001 -0.022 -0.004" quat="0.723001 -0.668192 -0.134859 -0.112259" contype="1" conaffinity="0" />
                                                       <geom name="3proxph_l" type="mesh" mesh="3proxph_l" contype="0" conaffinity="0" />
                                                       <geom name="Thirdpm_wrap_l" class="myoarm_wrap" size="0.004 0.005" pos="0.0017 -0.0439 -0.005" quat="0.700673 -0.00645453 0.712452 0.0377825" type="cylinder" contype="0" conaffinity="0" />
@@ -2404,7 +2370,6 @@
                                                       <site name="Thirdpm_site_UI_UB3_side_l" pos="0.00155575 -0.04355 -0.012991" />
                                                       <body name="midph3_l" pos="0.00165 -0.044211 -0.00623">
                                                         <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                        <joint name="pm3_flexion_l" pos="0 0 0" axis="-1 0 0" range="0 1.5708" />
                                                         <geom name="midph3_coll_l" class="myohand_coll" size="0.008 0.014" pos="0.0012 -0.014 0" quat="0.706847 -0.684988 -0.142874 -0.103663" contype="1" conaffinity="0" />
                                                         <geom name="3midph_l" type="mesh" mesh="3midph_l" contype="0" conaffinity="0" />
                                                         <geom name="Thirdmd_wrap_l" class="myoarm_wrap" size="0.003 0.005" pos="0.0014 -0.0289 -0.0012" quat="0.708186 0.0221627 0.701515 0.0765368" type="cylinder" contype="0" conaffinity="0" />
@@ -2418,7 +2383,6 @@
                                                         <site name="Thirdmd_site_EDC3_side_l" pos="0.00142423 -0.028063 -0.00714128" />
                                                         <body name="distph3_l" pos="0.001365 -0.029047 -0.001954">
                                                           <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                          <joint name="md3_flexion_l" pos="0 0 0" axis="-1 0 0" range="0 1.5708" />
                                                           <geom name="distph3_coll_l" class="myohand_coll" size="0.007 0.008" pos="0.0013 -0.009 0.002" quat="0.696489 -0.717132 -0.0174159 0.017932" contype="1" conaffinity="0" />
                                                           <geom name="3distph_l" type="mesh" mesh="3distph_l" contype="0" conaffinity="0" />
                                                           <geom name="distph3_coll_2_l" class="myohand_coll" size="0.0055 0.008 0.002" pos="0.002 -0.019 -0.003" quat="0.995004 -0.0998334 0 0" type="ellipsoid" rgba="1 1 1 0.8" contype="1" conaffinity="0" />
@@ -2448,8 +2412,6 @@
                                                     <site name="4thmcp_ellipsoid_site_UI_UB4_side_l" pos="-0.0107758 -0.0261555 0.00498369" />
                                                     <body name="4proxph_l" pos="-0.00183 -0.023689 0.000173">
                                                       <inertial pos="0 0 0" mass="0.01" diaginertia="0.0001 0.0001 0.0001" />
-                                                      <joint name="mcp4_flexion_l" pos="0 0 0" axis="-0.900447 0 0.434966" range="0 1.5708" />
-                                                      <joint name="mcp4_abduction_l" pos="0 0 0" axis="0.434966 0 0.900447" range="-0.261799 0.261799" />
                                                       <geom name="proxph4_coll_l" class="myohand_coll" size="0.0085 0.018" pos="-0.001 -0.02 -0.0008" quat="0.706822 -0.70626 0.028288 -0.0282655" contype="1" conaffinity="0" />
                                                       <geom name="4proxph_l" type="mesh" mesh="4proxph_l" contype="0" conaffinity="0" />
                                                       <geom name="Fourthpm_wrap_l" class="myoarm_wrap" size="0.004 0.005" pos="-0.0033 -0.0401 0.0001" quat="0.35623 0.660837 0.527455 0.397727" type="cylinder" contype="0" conaffinity="0" />
@@ -2468,7 +2430,6 @@
                                                       <site name="Fourthpm_site_UI_UB4_side_l" pos="-0.0089 -0.0388 -0.0018" />
                                                       <body name="midph4_l" pos="-0.003528 -0.040255 -0.001345">
                                                         <inertial pos="0 0 0" mass="0.003" diaginertia="0.0001 0.0001 0.0001" />
-                                                        <joint name="pm4_flexion_l" pos="0 0 0" axis="-0.921061 0 0.389418" range="0 1.5708" />
                                                         <geom name="midph4_coll_l" class="myohand_coll" size="0.0075 0.01" pos="0 -0.012 0.001" quat="0.703282 -0.709785 0.0281463 -0.0284066" contype="1" conaffinity="0" />
                                                         <geom name="4midph_l" type="mesh" mesh="4midph_l" contype="0" conaffinity="0" />
                                                         <geom name="Fourthmd_wrap_l" class="myoarm_wrap" size="0.003 0.005" pos="-0.0021 -0.0247 0.0001" quat="0.524748 0.0852157 0.846667 0.0230782" type="cylinder" contype="0" conaffinity="0" />
@@ -2482,7 +2443,6 @@
                                                         <site name="Fourthmd_site_EDC4_side_l" pos="-0.0021 -0.0247 -0.0061" rgba="1 0 0 1" />
                                                         <body name="distph4_l" pos="-0.002317 -0.024789 -0.000563">
                                                           <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                          <joint name="md4_flexion_l" pos="0 0 0" axis="-0.825336 0 0.564642" range="0 1.5708" />
                                                           <geom name="distph4_coll_l" class="myohand_coll" size="0.0068 0.008" pos="0 -0.01 0.002" quat="0.695836 -0.71646 0.0348208 -0.0358529" contype="1" conaffinity="0" />
                                                           <geom name="4distph_l" type="mesh" mesh="4distph_l" contype="0" conaffinity="0" />
                                                           <geom name="distph4_coll_2_l" class="myohand_coll" size="0.005 0.008 0.002" pos="-0.004 -0.019 -0.003" quat="0.964072 -0.0967298 0.246168 -0.0246992" type="ellipsoid" rgba="1 1 1 0.8" contype="1" conaffinity="0" />
@@ -2515,8 +2475,6 @@
                                                     <site name="5thmcp_ellipsoid_site_UI_UB5_side_l" pos="0.00407413 -0.0225573 0.0142669" />
                                                     <body name="5proxph_l" pos="-0.001597 -0.021431 0.001496">
                                                       <inertial pos="0 0 0" mass="0.005" diaginertia="0.0001 0.0001 0.0001" />
-                                                      <joint name="mcp5_flexion_l" pos="0 0 0" axis="-0.825336 0 0.564642" range="0 1.5708" />
-                                                      <joint name="mcp5_abduction_l" pos="0 0 0" axis="0.564642 0 0.825336" range="-0.261799 0.261799" />
                                                       <geom name="5proxph_coll_l" class="myohand_coll" size="0.008 0.016" pos="-0.003 -0.018 0.002" quat="0.666629 -0.743713 0.0333592 -0.0372166" contype="1" conaffinity="0" />
                                                       <geom name="5proxph_l" type="mesh" mesh="5proxph_l" contype="0" conaffinity="0" />
                                                       <geom name="Fifthpm_wrap_l" class="myoarm_wrap" size="0.004 0.005" pos="-0.0046 -0.0349 0.0042" quat="0.4295 0.0398509 0.90052 -0.0548241" type="cylinder" contype="0" conaffinity="0" />
@@ -2537,7 +2495,6 @@
                                                       <site name="Fifthpm_site_UI_UB5_side_l" pos="-0.0107 -0.0359 0.0032" />
                                                       <body name="midph5_l" pos="-0.005279 -0.035563 0.002879">
                                                         <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                        <joint name="pm5_flexion_l" pos="0 0 0" axis="-0.825336 0 0.564642" range="0 1.5708" />
                                                         <geom name="5midph_coll_l" class="myohand_coll" size="0.007 0.009" pos="-0.001 -0.011 0.0025" quat="0.666262 -0.743303 0.0400237 -0.0446518" contype="1" conaffinity="0" />
                                                         <geom name="5midph_l" type="mesh" mesh="5midph_l" contype="0" conaffinity="0" />
                                                         <geom name="Fifthmd_wrap_l" class="myoarm_wrap" size="0.003 0.005" pos="-0.0025 -0.0205 0.0025" quat="0.35929 0.0253303 0.929016 -0.0848458" type="cylinder" contype="0" conaffinity="0" />
@@ -2552,7 +2509,6 @@
                                                         <site name="EDM-P8_l" pos="-0.002 -0.003 -0.003" />
                                                         <body name="distph5_l" pos="-0.002871 -0.020677 0.002243">
                                                           <inertial pos="0 0 0" mass="0.001" diaginertia="0.0001 0.0001 0.0001" />
-                                                          <joint name="md5_flexion_l" pos="0 0 0" axis="-0.867728 0.149438 0.474042" range="0 1.5708" />
                                                           <geom name="5distph_coll_l" class="myohand_coll" size="0.006 0.007" pos="-0.0002 -0.009 0.002" quat="0.677709 -0.73363 0.0339137 -0.0367121" contype="1" conaffinity="0" />
                                                           <geom name="5distph_l" type="mesh" mesh="5distph_l" contype="0" conaffinity="0" />
                                                           <geom name="5distph_coll_2_l" class="myohand_coll" size="0.0045 0.006 0.002" pos="-0.005 -0.018 0" quat="0.91646 -0.0919527 0.387473 -0.038877" type="ellipsoid" rgba="1 1 1 0.8" contype="1" conaffinity="0" />
@@ -3198,6 +3154,9 @@
     <exclude body1="3proxph_l" body2="4proxph_l" />
     <exclude body1="4proxph_l" body2="5proxph_l" />
   </contact>
+  <deformable>
+    <skin name="hm08_skin" file="skins/hm08/myofullbody.skn" group="2" rgba="0.78 0.62 0.52 1" />
+  </deformable>
   <equality>
     <joint name="sternoclavicular_r2_con_r" joint1="sternoclavicular_r2_r" joint2="shoulder_elv_r" polycoef="0 -0.242 0 0 0" solimp="0.9999 0.9999" />
     <joint name="sternoclavicular_r3_con_r" joint1="sternoclavicular_r3_r" joint2="shoulder_elv_r" polycoef="0 0.1025 0 0 0" solimp="0.9999 0.9999" />

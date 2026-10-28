@@ -36,6 +36,85 @@ _DISS = 0.0725
 _FRICTION = (0.95, 0.3, 0.3)
 _TRANS = 0.001
 
+# Bolt myosprinter.xml joint viscous damping (N·m·s/rad). myofullbody_simple ships
+# MyoArm/MyoLeg defaults (shoulder 1.05, elbow 0.75, legs/torso 0.5) which freeze
+# arm swing and overdamp locomotor DOFs relative to Bolt.
+_BOLT_DAMP_LEG = 0.1
+_BOLT_DAMP_MTP = 0.4
+_BOLT_DAMP_TORSO = 1.0
+_BOLT_DAMP_SHOULDER = 0.1
+_BOLT_DAMP_ELBOW = 0.01
+
+
+def _bolt_damp_group(name: str) -> str | None:
+    n = name.rsplit("/", 1)[-1].lower()
+    if n.startswith("mtp_angle"):
+        return "mtp"
+    if any(n.startswith(p) for p in ("hip_", "knee_angle", "ankle_angle", "subtalar_angle")):
+        return "leg"
+    if n in ("flex_extension", "lat_bending", "axial_rotation"):
+        return "torso"
+    if ("elbow" in n) or n.startswith("pro_sup"):
+        return "elbow"
+    if any(s in n for s in ("shoulder", "elv_angle", "sternoclav", "acromioclav", "unrothum", "unrotscap")):
+        return "shoulder"
+    return None
+
+
+def _bolt_damp_value(group: str) -> float:
+    return {
+        "leg": _BOLT_DAMP_LEG,
+        "mtp": _BOLT_DAMP_MTP,
+        "torso": _BOLT_DAMP_TORSO,
+        "shoulder": _BOLT_DAMP_SHOULDER,
+        "elbow": _BOLT_DAMP_ELBOW,
+    }[group]
+
+
+def apply_bolt_joint_damping(spec_or_model, *, arms: bool = True, legs: bool = True, torso: bool = True) -> int:
+    """Set hinge damping to Bolt myosprinter homologs. Works on MjSpec or MjModel.
+
+    Returns the number of joints changed. Scapular scaffold DOFs (no Bolt 1:1) use
+    the shoulder value 0.1; pro_sup uses the elbow value 0.01.
+    """
+    want = set()
+    if arms:
+        want |= {"shoulder", "elbow"}
+    if legs:
+        want |= {"leg", "mtp"}
+    if torso:
+        want |= {"torso"}
+    n_changed = 0
+    if isinstance(spec_or_model, mujoco.MjSpec):
+        for joint in spec_or_model.joints:
+            if joint.type == mujoco.mjtJoint.mjJNT_FREE:
+                continue
+            g = _bolt_damp_group(joint.name or "")
+            if g is None or g not in want:
+                continue
+            val = _bolt_damp_value(g)
+            # MuJoCo >=3.8 polynomial damping: linear term in [0].
+            cur = float(joint.damping[0]) if len(joint.damping) else 0.0
+            if abs(cur - val) > 1e-12:
+                joint.damping = [val, 0.0, 0.0]
+                n_changed += 1
+        return n_changed
+    m = spec_or_model
+    for j in range(m.njnt):
+        if m.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE:
+            continue
+        name = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_JOINT, j) or ""
+        g = _bolt_damp_group(name)
+        if g is None or g not in want:
+            continue
+        dof = int(m.jnt_dofadr[j])
+        val = _bolt_damp_value(g)
+        if abs(float(m.dof_damping[dof]) - val) > 1e-12:
+            m.dof_damping[dof] = val
+            n_changed += 1
+    return n_changed
+
+
 # Capsule/sphere/plane body geoms that participate in HC contact (exclude fingers).
 # Foot/toe capsules are converted to spheres (Bolt sprinter style) — ContactSystem's
 # plane–capsule path is unreliable for myo_sim's Z-up foot frames.
@@ -338,6 +417,10 @@ def build_contact(m: mujoco.MjModel) -> dict:
 def prepare_bolt_spec(spec: mujoco.MjSpec) -> mujoco.MjSpec:
     """Disable native MJ contacts; zero mjMUSCLE force; add 1e-3 armature (Bolt / WarpSprintEnv).
 
+    Also aligns hinge ``damping`` to Bolt myosprinter homologs (legs 0.1, mtp 0.4,
+    torso 1.0, shoulder scaffold 0.1, elbow/pro_sup 0.01). MyoArm/MyoLeg asset
+    defaults otherwise freeze arm swing and overdamp locomotor DOFs (~5×).
+
     Tendons are kept so MuscleSystem path=\"tendon\" can read ten_length / ten_J. Actuators are
     rewritten as fixed-gain=0 generals so MuJoCo itself applies no muscle force (MuscleSystem
     owns qfrc via apply()).
@@ -347,6 +430,7 @@ def prepare_bolt_spec(spec: mujoco.MjSpec) -> mujoco.MjSpec:
     for joint in spec.joints:
         if joint.type != mujoco.mjtJoint.mjJNT_FREE:
             joint.armature = 1e-3
+    apply_bolt_joint_damping(spec, arms=True, legs=True, torso=True)
     for act in spec.actuators:
         # Zero-force ctrl slot with filter dynamics so mj_model.na == nu (wd.act exists for
         # BoltMuscleAction / adapter reset writes). Tendon transmission kept for ten_length.
