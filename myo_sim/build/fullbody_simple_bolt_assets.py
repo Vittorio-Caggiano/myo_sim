@@ -5,7 +5,9 @@ Writes under ``myo_sim/models/fullbody_simple/``:
   - ``contact.npz``  — Hunt–Crossley ``geom_flat`` / pairs (floor + foot/leg capsules)
   - ``map.json``     — qposadr / dofadr / limits for MuscleSystem joint-limit forces
 
-Applies msk_envs EnvConfigSprinter-style F0×2 / vmax=12 boosts. ``lopt``/``lts`` come from
+Stores base muscle strength (F0 = MuJoCo's own) and msk_envs' base vmax 10: the EnvConfigSprinter sprint boosts
+(F0×2, vmax 12) belong to the task and are applied at load time by the consumer (meta ``sprint_boost_baked: false``;
+assets built before 2026-10-29 had them baked in). ``lopt``/``lts`` come from
 MuJoCo's own muscle mapping (``fiber_tendon_lengths``): optimal fiber length is MuJoCo's L0, not
 the musculotendon length at optimum (that earlier bug made every fiber ~the whole MTU and
 removed every tendon).
@@ -135,7 +137,10 @@ _CONTACT_NAME_SUBSTR = (
 _FOOT_SUBSTR = ("foot_col", "bofoot_col")
 
 
-def _default_params(F0: float, lopt: float, lts: float = 0.2, alpha0: float = 0.0, vmax: float = 12.0):
+BASE_VMAX = 10.0  # msk_envs EnvConfig default; EnvConfigSprinter raises it to 12 (task-level)
+
+
+def _default_params(F0: float, lopt: float, lts: float = 0.2, alpha0: float = 0.0, vmax: float = BASE_VMAX):
     """DGF parameter vector (21 floats) matching Bolt / OpenSim DeGrooteFregly2016Muscle layout."""
     p = [0.0] * 21
     p[0] = F0
@@ -206,14 +211,14 @@ def build_muscles(m: mujoco.MjModel) -> list[dict]:
             continue
         if int(m.actuator_trntype[i]) != int(mujoco.mjtTrn.mjTRN_TENDON):
             continue
-        F0 = float(m.actuator_gainprm[i, 2]) * 2.0  # EnvConfigSprinter F0×2
+        F0 = float(m.actuator_gainprm[i, 2])  # base strength; the task applies EnvConfigSprinter's F0×2
         lopt, lts, re = fiber_tendon_lengths(m, i, float(ten_len[tid]))
         n_reanchor += int(re)
         if not (math.isfinite(lopt) and lopt > 0 and math.isfinite(F0) and F0 > 0):
             raise RuntimeError(f"bad muscle params for {name}: lopt={lopt} F0={F0}")
         muscles.append(
             dict(
-                p=_default_params(F0=F0, lopt=lopt, lts=lts, vmax=12.0),
+                p=_default_params(F0=F0, lopt=lopt, lts=lts, vmax=BASE_VMAX),
                 family=0,
                 ctrl_id=i,
                 path="tendon",
@@ -455,6 +460,23 @@ def main() -> None:
     # so F0/lopt can be read from gainprm/lengthrange; runtime prepare_bolt_spec zeroes force.
     m = load_spec("myofullbody_simple").compile()
 
+    if "--unbake-sprint-boost" in sys.argv:
+        # shipped assets had F0x2 / vmax 12 baked in: store base values instead (x0.5 is exact in binary floating point)
+        meta_path = OUT_DIR / "meta.json"
+        meta = json.loads(meta_path.read_text())
+        if meta.get("sprint_boost_baked", True):
+            rows = list(np.load(OUT_DIR / "muscles.npy", allow_pickle=True))
+            for r in rows:
+                p = list(r["p"])
+                p[0] = p[0] / 2.0
+                p[4] = BASE_VMAX
+                r["p"] = p
+            np.save(OUT_DIR / "muscles.npy", np.array(rows, dtype=object), allow_pickle=True)
+            meta["sprint_boost_baked"] = False
+            meta_path.write_text(json.dumps(meta, indent=2))
+            print(f"unbaked sprint boosts in {OUT_DIR / 'muscles.npy'} ({len(rows)} muscles)")
+        return
+
     if "--repair-lengths" in sys.argv:
         n = repair_lengths(m, OUT_DIR / "muscles.npy")
         meta_path = OUT_DIR / "meta.json"
@@ -492,6 +514,7 @@ def main() -> None:
         n_pairs=int(contact["pairs"].shape[0]),
         naconmax=int(contact["naconmax"]),
         n_limits=len(mapf["limits"]),
+        sprint_boost_baked=False,
     )
     (OUT_DIR / "meta.json").write_text(json.dumps(meta, indent=2))
     print(f"wrote {OUT_DIR}: {meta}")

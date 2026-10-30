@@ -9,5 +9,6 @@
   "naconmax": 256,
   "n_limits": 63,
   "lts_calibration": "lopt = MuJoCo L0, lts = lengthrange0 - range0*L0 (rigid-tendon map); 26 degenerate maps re-anchored to ln=1 at qpos0",
-  "fiber_length_fix": "2026-09-30: lopt was the MTU length at ln=1 (fibers ~whole MTU)"
+  "fiber_length_fix": "2026-09-30: lopt was the MTU length at ln=1 (fibers ~whole MTU)",
+  "sprint_boost_baked": false
 }

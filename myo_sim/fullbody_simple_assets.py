@@ -27,6 +27,15 @@ def load_contact() -> dict:
     return {"geom_flat": cz["geom_flat"], "pairs": cz["pairs"], "naconmax": int(cz["naconmax"])}
 
 
+def load_meta() -> dict:
+    return json.loads((_DIR / "meta.json").read_text())
+
+
+def sprint_boost_baked() -> bool:
+    """True for assets built before 2026-10-29, whose muscles carry EnvConfigSprinter's F0x2 / vmax 12."""
+    return bool(load_meta().get("sprint_boost_baked", True))
+
+
 def load_map() -> dict:
     return json.loads((_DIR / "map.json").read_text())
 
