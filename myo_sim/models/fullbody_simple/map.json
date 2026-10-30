@@ -548,7 +548,7 @@
     },
     {
       "coord": "shoulder_rot_r",
-      "q_low": -1.571,
+      "q_low": -1.658,
       "q_up": 2.094,
       "k_low": 500.0,
       "k_up": 500.0,
@@ -692,7 +692,7 @@
     },
     {
       "coord": "shoulder_rot_l",
-      "q_low": -1.571,
+      "q_low": -1.658,
       "q_up": 2.094,
       "k_low": 500.0,
       "k_up": 500.0,
