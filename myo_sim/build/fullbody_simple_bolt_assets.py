@@ -103,7 +103,7 @@ def apply_bolt_joint_damping(spec_or_model, *, arms: bool = True, legs: bool = T
         return n_changed
     m = spec_or_model
     for j in range(m.njnt):
-        if m.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE:
+        if int(m.jnt_type[j]) == int(mujoco.mjtJoint.mjJNT_FREE):
             continue
         name = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_JOINT, j) or ""
         g = _bolt_damp_group(name)
