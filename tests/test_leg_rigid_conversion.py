@@ -8,6 +8,8 @@ force-length bounds. The semimembranosus check guards the regression where an ov
 (Rajagopal: ~0.95).
 """
 
+from pathlib import Path
+
 import mujoco
 import numpy as np
 import pytest
@@ -16,6 +18,7 @@ import myo_sim
 from myo_sim.build.leg_passive import load_passive_data
 from myo_sim.build.rigid_conversion import (
     actuator_lengths,
+    joint_sweep_postures,
     load_leg_reference,
     mujoco_fiber_length,
     rigid_equivalent_fiber_length,
@@ -56,7 +59,7 @@ def test_adopted_maps_match_reference_fiber_length(leg):
         )
         target = target - shifts.get(name, 0.0)  # passive calibration: tendon slack shifted by this many L0
         rmse = float(np.sqrt(np.mean((mujoco_fiber_length(model, a, lengths[:, j]) - target) ** 2)))
-        if rmse > MAX_LN_RMSE:
+        if not np.isfinite(rmse) or rmse > MAX_LN_RMSE:
             failures[name] = round(rmse, 3)
     assert not failures, failures
 
@@ -79,3 +82,53 @@ def test_semimem_standing_fiber_length_near_reference(leg):
     a = _act(model, "semimem_r")
     ln = float(mujoco_fiber_length(model, a, data.actuator_length[a]))
     assert 0.6 < ln < 1.3, ln  # Rajagopal2016 (OpenSim, passive): 0.95; the passive calibration shifts it by <= 0.15
+
+
+OPENSIM = Path(__file__).parent / "data" / "rajagopal2016_leg_opensim.npz"
+
+
+def test_adopted_maps_match_opensim_fiber_length(leg):
+    """MuJoCo's map against OpenSim's own (Millard, passive) fibre length at the packaged postures (myolegs_osim_ref)."""
+    model, ref, _ = leg
+    z = np.load(OPENSIM)
+    coords = [str(c) for c in z["coords"]]
+    postures = np.stack(
+        [sample_postures(model, {c: (float(v), float(v)) for c, v in zip(coords, row)}, 1, 0)[0] for row in z["postures"]]
+    )
+    names = [str(n) for n in z["names"]]
+    shifts = {n: r["slack_shift_L0"] for n, r in load_passive_data().get("fit", {}).get("muscles", {}).items()}
+    rmse = {}
+    for name in ref["adopted"]:
+        a = _act(model, name)
+        lengths = actuator_lengths(model, postures, [a])[:, 0]
+        ln_mj = mujoco_fiber_length(model, a, lengths) + shifts.get(name, 0.0)  # undo the passive calibration's shift
+        rmse[name] = float(np.sqrt(np.mean((ln_mj - z["ln"][:, names.index(name)]) ** 2)))
+    assert all(np.isfinite(v) for v in rmse.values()), rmse
+    assert np.median(list(rmse.values())) < 0.03, rmse
+    assert max(rmse.values()) < 0.12, rmse
+
+
+def test_lengthrange_covers_single_joint_sweeps(leg):
+    """lengthrange spans each joint swept alone over its range, except where an anchor was clipped to the FL bounds."""
+    model, ref, _ = leg
+    sweeps = actuator_lengths(
+        model, joint_sweep_postures(model, list(ref["posture_ranges_rad"])), [_act(model, n) for n in ref["adopted"]]
+    )
+    bad = {}
+    for j, name in enumerate(ref["adopted"]):
+        a = _act(model, name)
+        (r0, r1), (lr0, lr1), (lmin, lmax) = (
+            model.actuator_gainprm[a, :2],
+            model.actuator_lengthrange[a],
+            model.actuator_gainprm[a, 4:6],
+        )
+        low_ok = sweeps[:, j].min() >= lr0 - 1e-6 or r0 <= lmin + 0.0201
+        high_ok = sweeps[:, j].max() <= lr1 + 1e-6 or r1 >= lmax - 0.0201
+        if not (low_ok and high_ok):
+            bad[name] = (
+                round(float(sweeps[:, j].min()), 4),
+                round(float(lr0), 4),
+                round(float(sweeps[:, j].max()), 4),
+                round(float(lr1), 4),
+            )
+    assert not bad, bad

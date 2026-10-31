@@ -11,11 +11,14 @@ scales the passive force without changing the active force. Per muscle both are 
 - a one-sided loss: a moment beyond the measured total (which includes ligaments and other tissue), or opposite to it, costs
   ``EXCESS_WEIGHT`` times a deficit;
 - penalties on the slack shift (in units of L0) and on ``|ln(fpmax / reference)|``; the shift is bounded by ``MAX_SHIFT`` L0;
+- fascicle-length targets from ultrasound (``fascicle_targets``: Narici et al. 1996, medial gastrocnemius at rest), so the
+  slack lengths keep the measured operating lengths;
 - an active constraint: the active force-length factor at the angle of the group's maximal voluntary strength (Anderson,
   Madigan & Nussbaum 2007, J Biomech 40:3105-3113, doi:10.1016/j.jbiomech.2007.03.022, same test postures) stays at least
   ``MIN_FL``.
-Passive moments are evaluated with MuJoCo's passive curve on precomputed path lengths and moment arms (they do not depend on the
-fitted parameters); ``tests/test_leg_passive.py`` checks them against ``mj_forward``.
+Passive moments are evaluated with MuJoCo's passive curve on precomputed path lengths and effective moment arms (dL/dtheta with the
+joint-equality followers, e.g. knee translations and patella, resolved; they do not depend on the fitted parameters);
+``tests/test_leg_passive.py`` checks them against ``mj_forward`` forces.
 
 Usage::
 
@@ -35,7 +38,7 @@ from pathlib import Path
 import mujoco
 import numpy as np
 
-from myo_sim.build.rigid_conversion import LEG_MUSCLE_XML, sample_postures
+from myo_sim.build.rigid_conversion import LEG_MUSCLE_XML, effective_moment_arms, sample_postures
 
 DATA = Path(__file__).parent / "data" / "leg_passive.json"
 T_MAX = 40.0  # N m; the exponential fits are not used beyond this
@@ -110,37 +113,28 @@ def silder_postures(ref: dict) -> np.ndarray:
 
 
 def geometry(model: mujoco.MjModel, angles: np.ndarray, acts: list[int]) -> tuple[np.ndarray, np.ndarray]:
-    """Actuator lengths (n, m) and moment arms dL/dq (n, m, 3) at hip, knee, ankle for (hip, knee, ankle) postures."""
-    data = mujoco.MjData(model)
-    dofs = [model.jnt_dofadr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, j)] for j in JOINTS]
+    """Actuator lengths (n, m) and effective moment arms dL/dtheta (n, m, 3) about the hip, knee and ankle coordinates."""
     lengths, arms = np.zeros((len(angles), len(acts))), np.zeros((len(angles), len(acts), 3))
-    moment = np.zeros((model.nu, model.nv))
     for i, q in enumerate(angles):
-        data.qpos[:] = sample_postures(model, {j: (v, v) for j, v in zip(JOINTS, q)}, 1, 0)[0]
-        mujoco.mj_fwdPosition(model, data)
-        mujoco.mju_sparse2dense(moment, data.actuator_moment, data.moment_rownnz, data.moment_rowadr, data.moment_colind)
-        lengths[i] = data.actuator_length[acts]
-        arms[i] = moment[np.ix_(acts, dofs)]
+        lengths[i], arms[i] = effective_moment_arms(model, dict(zip(JOINTS, q)), list(JOINTS), acts)
     return lengths, arms
 
 
 def model_passive(model: mujoco.MjModel, angles: np.ndarray, exclude: list[int] = ()) -> np.ndarray:
-    """Passive (zero-activation) moments at hip, knee, ankle from all muscles except ``exclude``, via ``mj_forward``."""
-    m = model
-    keep = m.actuator_gainprm[:, 7].copy(), m.actuator_biasprm[:, 7].copy()
-    m.actuator_gainprm[list(exclude), 7] = m.actuator_biasprm[list(exclude), 7] = 0.0
-    try:
-        data = mujoco.MjData(m)
-        dofs = [m.jnt_dofadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, j)] for j in JOINTS]
-        out = np.zeros((len(angles), 3))
-        for i, q in enumerate(angles):
-            data.qpos[:] = sample_postures(m, {j: (v, v) for j, v in zip(JOINTS, q)}, 1, 0)[0]
-            data.act[:] = 0
-            mujoco.mj_forward(m, data)
-            out[i] = data.qfrc_actuator[dofs]
-        return out
-    finally:
-        m.actuator_gainprm[:, 7], m.actuator_biasprm[:, 7] = keep
+    """Passive (zero-activation) moments about hip, knee, ankle from all muscles except ``exclude``.
+
+    Moments are actuator forces times effective moment arms (joint-equality followers included)."""
+    muscles = [a for a in range(model.nu) if int(model.actuator_gaintype[a]) == int(mujoco.mjtGain.mjGAIN_MUSCLE)]
+    acts = [a for a in muscles if a not in set(exclude)]
+    data = mujoco.MjData(model)
+    out = np.zeros((len(angles), 3))
+    for i, q in enumerate(angles):
+        _, arm = effective_moment_arms(model, dict(zip(JOINTS, q)), list(JOINTS), acts)
+        data.qpos[:] = sample_postures(model, {j: (v, v) for j, v in zip(JOINTS, q)}, 1, 0)[0]
+        data.act[:] = 0
+        mujoco.mj_forward(model, data)
+        out[i] = data.actuator_force[acts] @ arm  # actuator_force is minus the tension
+    return out
 
 
 class LegMuscles:
@@ -188,6 +182,18 @@ def fit_leg_passive(model: mujoco.MjModel) -> dict:
     s_owner = np.array(s_owner)
     s_len, _ = geometry(model, np.array(s_post), mus.acts)
     m = len(names)
+    # fascicle-length targets (ultrasound): fibre length ln * L0 at the given postures
+    ft = ref.get("fascicle_targets", {"rows": [], "weight_Nm_per_mm": 0.0})
+    f_idx = np.array([names.index(r["muscle"] + "_r") for r in ft["rows"]], int)
+    f_mm = np.array([r["mm"] for r in ft["rows"]], float)
+    f_len = (
+        geometry(model, np.radians([[r["posture_deg"].get(j, 0.0) for j in JOINTS] for r in ft["rows"]]), mus.acts)[0]
+        if ft["rows"]
+        else np.zeros((0, m))
+    )
+
+    def fascicle_mm(shift: np.ndarray) -> np.ndarray:
+        return 1e3 * (mus.ln(f_len, shift)[np.arange(len(f_idx)), f_idx] * mus.l0[f_idx])
 
     def unpack(x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         return x[:m], np.exp(x[m:])
@@ -201,7 +207,10 @@ def fit_leg_passive(model: mujoco.MjModel) -> dict:
         err = (fixed + mus.passive_moments(lengths, arms, shift, fp) - target)[ok]
         w = np.where(np.sign(target[ok]) * err > 0, EXCESS_WEIGHT, 1.0)
         constraint = 1e3 * np.maximum(MIN_FL - strength_fl(shift), 0.0)
-        return np.concatenate([err * np.sqrt(w), SHIFT_PENALTY * shift, FPMAX_PENALTY * np.log(fp / mus.fpmax0), constraint])
+        fasc = ft["weight_Nm_per_mm"] * (fascicle_mm(shift) - f_mm)
+        return np.concatenate(
+            [err * np.sqrt(w), SHIFT_PENALTY * shift, FPMAX_PENALTY * np.log(fp / mus.fpmax0), constraint, fasc]
+        )
 
     def errors(shift: np.ndarray, fp: np.ndarray) -> dict:
         e = np.where(ok, fixed + mus.passive_moments(lengths, arms, shift, fp) - target, np.nan)
@@ -226,6 +235,11 @@ def fit_leg_passive(model: mujoco.MjModel) -> dict:
             }
             for i, n in enumerate(names)
         },
+        "fascicle_mm": {
+            "target": f_mm.tolist(),
+            "before": np.round(fascicle_mm(np.zeros(m)), 1).tolist(),
+            "after": np.round(fascicle_mm(shift), 1).tolist(),
+        },  # fmt: skip
         "rms_Nm_before": errors(np.zeros(m), mus.fpmax0),
         "rms_Nm_after": errors(shift, fp),
         "min_active_fl_at_strength_postures": {

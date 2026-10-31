@@ -23,6 +23,8 @@ myo_sim/              # installable Python package
     hand.py           # prune_arm_spec_to_hand()
     rigid_conversion.py  # rigid-tendon muscle maps from reference l0/lts/pennation (legs: Rajagopal 2016)
     data/rajagopal2016_leg_muscles.json  # reference muscle parameters and the converted-muscle list
+    leg_passive.py       # leg tendon slack / fpmax fitted to measured passive moments (Silder 2007)
+    data/leg_passive.json  # passive source curves, citations and the recorded fit
 tests/
   test_sims.py                     # smoke: loads static XML models
   test_build_registry.py           # BuildStrategy enum, MODEL_REGISTRY completeness
@@ -30,7 +32,8 @@ tests/
   test_mirror_symmetry.py          # body positions and axes are bilateral reflections
   test_chest_ownership.py          # chest_r in torso chain, not arm chain
   test_leg_muscle_symmetry.py      # leg moment arms symmetric L/R
-  test_leg_rigid_conversion.py     # leg muscle maps vs Rajagopal rigid-tendon fibre lengths
+  test_leg_rigid_conversion.py     # leg muscle maps vs Rajagopal rigid-tendon and OpenSim fibre lengths
+  test_leg_passive.py              # leg passive moments vs the recorded fit to Silder et al. 2007
   test_torso_muscle_symmetry.py    # torso moment arms symmetric L/R
   test_fragment_registry.py        # no stale static FragmentRegistry aliases
   test_passive_torso_build.py / test_legs_abdomen_build.py

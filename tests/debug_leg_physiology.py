@@ -25,7 +25,7 @@ import mujoco
 import numpy as np
 
 import myo_sim
-from myo_sim.build.rigid_conversion import sample_postures
+from myo_sim.build.rigid_conversion import effective_moment_arms, sample_postures
 
 HEIGHT = 1.748  # m, mean height of Anderson et al.'s young males; body weight from the model's mass
 TESTS = {  # joint, tested range (deg), fixed joints (rad): Anderson et al. 2007 dynamometer postures
@@ -71,26 +71,27 @@ def map_l0(model: mujoco.MjModel, a: int) -> float:
 
 
 def torque_curves(model: mujoco.MjModel, data: mujoco.MjData) -> dict:
-    muscle = np.array([int(model.actuator_gaintype[i]) == int(mujoco.mjtGain.mjGAIN_MUSCLE) for i in range(model.nu)])
+    """Maximal isometric active torque about the tested coordinate: actuator forces times effective moment arms (dL/dtheta
+    with joint-equality followers such as the knee translations resolved), all agonists at full activation minus zero."""
+    muscle = [a for a in range(model.nu) if int(model.actuator_gaintype[a]) == int(mujoco.mjtGain.mjGAIN_MUSCLE)]
     out = {}
     for test, (joint, (lo, hi), fixed) in TESTS.items():
-        dof = model.jnt_dofadr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, joint)]
         angles = np.arange(lo, hi + 1e-9, 5.0)
         curves = {1: [], -1: []}
         for ang in angles:
-            data.qpos[:] = pose(model, {**fixed, joint: np.radians(ang)})
+            joints = {**fixed, joint: np.radians(ang)}
+            _, arm = effective_moment_arms(model, joints, [joint], muscle)
+            data.qpos[:] = pose(model, joints)
             data.qvel[:] = 0
             data.act[:] = 0
             mujoco.mj_forward(model, data)
-            moment = np.zeros((model.nu, model.nv))
-            mujoco.mju_sparse2dense(moment, data.actuator_moment, data.moment_rownnz, data.moment_rowadr, data.moment_colind)
-            base = float(data.qfrc_actuator[dof])
+            base = data.actuator_force[muscle] @ arm[:, 0]
             for sign in (1, -1):
-                agonists = np.flatnonzero(muscle & (sign * moment[:, dof] < -1e-3))  # moment = dL/dq; tension is negative force
+                agonists = [a for a, r in zip(muscle, arm[:, 0]) if sign * r < -1e-3]  # dL/dtheta < 0 shortens: +torque
                 data.act[:] = 0
                 data.act[model.actuator_actadr[agonists]] = 1.0
                 mujoco.mj_forward(model, data)
-                curves[sign].append(sign * (float(data.qfrc_actuator[dof]) - base))
+                curves[sign].append(sign * float(data.actuator_force[muscle] @ arm[:, 0] - base))
         out[test] = (angles, curves)
     return out
 
@@ -99,11 +100,14 @@ def main() -> None:
     model, data = myo_sim.load("myolegs")
     bwh = float(np.sum(model.body_mass)) * 9.81 * HEIGHT
     summary = {"strength": {}, "fiber_length_vs_ward": {}, "gasmed_fascicle_rest_mm": {}}
-    knee = model.jnt_dofadr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "knee_angle_r")]
-    data.qpos[:] = pose(model, {"hip_flexion_r": np.radians(70), "knee_angle_r": 0.0})
+    muscles = [a for a in range(model.nu) if int(model.actuator_gaintype[a]) == int(mujoco.mjtGain.mjGAIN_MUSCLE)]
+    joints = {"hip_flexion_r": np.radians(70), "knee_angle_r": 0.0}
+    _, arm = effective_moment_arms(model, joints, ["knee_angle_r"], muscles)
+    data.qpos[:] = pose(model, joints)
     data.act[:] = 0
     mujoco.mj_forward(model, data)
-    summary["passive_knee_moment_hip70_knee0_Nm"] = {"model": round(float(data.qfrc_actuator[knee]), 1), "human": 6.25}
+    passive = float(data.actuator_force[muscles] @ arm[:, 0])
+    summary["passive_knee_moment_hip70_knee0_Nm"] = {"model": round(passive, 1), "human": 6.25}
     curves = torque_curves(model, data)
     for (test, sign), (c1, c2, c3) in ANDERSON.items():
         angles, cur = curves[test]

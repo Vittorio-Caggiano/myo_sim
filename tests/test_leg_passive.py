@@ -18,10 +18,10 @@ from myo_sim.build.leg_passive import (
     active_fl,
     geometry,
     load_passive_data,
+    model_passive,
     silder_moments,
     silder_postures,
 )
-from myo_sim.build.rigid_conversion import sample_postures
 
 
 @pytest.fixture(scope="module")
@@ -33,14 +33,7 @@ def leg():
 
 
 def _mj_passive(model, data, angles):
-    dofs = [model.jnt_dofadr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, j)] for j in JOINTS]
-    out = []
-    for q in angles:
-        data.qpos[:] = sample_postures(model, {j: (v, v) for j, v in zip(JOINTS, q)}, 1, 0)[0]
-        data.act[:] = 0
-        mujoco.mj_forward(model, data)
-        out.append(data.qfrc_actuator[dofs].copy())
-    return np.array(out)
+    return model_passive(model, angles)  # mj_forward forces times effective moment arms, all leg muscles
 
 
 def test_fitted_errors_reproduce_and_improve(leg):
