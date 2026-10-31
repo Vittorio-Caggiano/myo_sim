@@ -1,0 +1,76 @@
+# Wiki Maintenance Log
+
+Append-only. Add entries at the top (most recent first). Do not edit past entries.
+
+---
+
+## 2026-10-31 — Leg passive force calibrated to measured passive joint moments
+Changed: `myo_sim/models/leg/assets/myolegs_muscle.xml`, `myo_sim/build/leg_passive.py`, `myo_sim/build/data/leg_passive.json`, `tests/test_leg_passive.py`, `tests/test_leg_rigid_conversion.py`, `tests/data/rajagopal2016_leg_opensim.npz`, `tests/debug_leg_physiology.py`, `myo_sim/models/leg/README.md`
+Why: With the converted maps the hamstrings still gave 19-41 Nm of passive knee moment where people show 6-30 Nm, and MuJoCo's default passive scale did not reflect measured passive moments anywhere. Tendon slack length and fpmax per muscle are fitted to Silder et al. (2007), keeping the gastrocnemius at Narici et al. (1996) fascicle lengths and each muscle at half its active force or more at Anderson et al. (2007) strength angles; hip/knee/ankle RMS 19.8/11.2/2.6 -> 11.0/8.4/2.1 N m. Torques in the physiology script now use effective moment arms (knee translations and patella resolved), which changes the knee numbers reported on this date.
+
+## 2026-10-31 — Leg rigid-tendon muscle maps derived directly from the Rajagopal reference
+Changed: `myo_sim/models/leg/assets/myolegs_muscle.xml`, `myo_sim/build/rigid_conversion.py`, `myo_sim/build/data/rajagopal2016_leg_muscles.json`, `tests/test_leg_rigid_conversion.py`, `tests/debug_leg_physiology.py`, `docs/wiki/model-authoring.md`, `docs/wiki/testing-guide.md`, `docs/wiki/repository-map.md`, `myo_sim/models/leg/README.md`
+Why: The 2026-08-02 leg refit kept anatomical optimal fibre lengths but anchored them to a gait-range `lengthrange`; outside it MuJoCo extrapolates, and semimembranosus reached ln ~2.9 with the hip flexed (161 Nm passive knee moment). Fitting MuJoCo's linear map to the reference's rigid-tendon fibre length over the full joint range reproduces OpenSim's fibre lengths (median RMSE 0.02, max 0.10, over 400 postures) and was adopted for the 24 muscles where it raises the isometric force error by at most 2 % of Fmax; checked against cadaver fibre lengths, ultrasound fascicle lengths and dynamometry.
+
+## 2026-08-02 — Widen force-length curve bounds for muscles whose refit operating range outgrew them
+Changed: `myo_sim/models/arm/assets/myoarm_r_muscle.xml`, `myo_sim/models/torso/assets/myotorso_muscle.xml`
+Why: Restoring anatomical fiber length for 26 muscles (see the anatomical-parameter entries below) shifted their normalized operating range partly outside the shared default force-length curve bounds (`lmin`/`lmax`); widened bounds per muscle to contain the new range, respecting MuJoCo's `lmin < 1 < lmax` requirement.
+
+## 2026-08-02 — Add inter-finger self-collision pairs to the hand
+Changed: `myo_sim/models/contacts/myohand_contacts.xml`
+Why: No finger-to-finger contact pairs existed at all (only forearm-torso and left/right-forearm pairs), so fingers could pass through each other; added adjacent-digit pairs at each phalanx level plus thumb-opposition pairs, verified on both single-hand and bilateral builds.
+
+## 2026-08-02 — Widen wrist deviation and shoulder rotation ranges
+Changed: `myo_sim/models/arm/assets/myoarm_r_chain.xml`
+Why: Real motion-capture data (throwing, catching, tennis) required wrist deviation and shoulder rotation angles beyond the shipped joint limits; widened both to cover the observed range plus a literature-consistent margin.
+
+## 2026-08-02 — Correct lumbar axial rotation and wrist flexion joint ranges
+Changed: `myo_sim/models/torso/assets/myotorso_chain.xml`, `myo_sim/models/arm/assets/myoarm_r_chain.xml`
+Why: `L4_L5_AR` was ~18x wider than published per-segment lumbar ROM and wrist `flexion_r` was roughly half the typical clinical range; corrected both to match standard normative values.
+
+## 2026-08-02 — Restore anatomical muscle parameters for hand extrinsics
+Changed: `myo_sim/models/arm/assets/myoarm_r_muscle.xml`
+Why: All 24 flagged finger/wrist flexor-extensor muscles had never received individual calibration and were compiling against MuJoCo's raw default fiber-length range; fit each to its OpenSim/MoBL-ARMS anatomical optimal fiber length, tendon slack length, and peak force.
+
+## 2026-08-02 — Restore anatomical muscle parameters for shoulder muscles
+Changed: `myo_sim/models/arm/assets/myoarm_r_muscle.xml`
+Why: 7 of 8 shoulder muscles flagged with inflated optimal fiber length were refit to their anatomical values; the 8th (`CORB`) was left unchanged after its excursion pattern matched the profile of muscles where refitting measurably hurts force accuracy.
+
+## 2026-08-02 — Restore anatomical muscle parameters for the leg
+Changed: `myo_sim/models/leg/assets/myolegs_muscle.xml`
+Why: 6 of 10 flagged leg muscles were refit to anatomical optimal fiber length/tendon slack/peak force after remeasuring their physiological length range; the other 4 were deliberately left unchanged because refitting was cross-validated to increase force error against the OpenSim reference, not reduce it.
+
+## 2026-08-02 — Restore anatomical muscle parameters for the torso
+Changed: `myo_sim/models/torso/assets/myotorso_muscle.xml`
+Why: 25 torso muscles had optimal fiber length inflated 5-30x versus the anatomical reference (a conversion artifact, not a real path-length problem); refit each to match, remeasuring the physiological joint range for the two muscles whose fit initially came out physically invalid.
+## 2026-08-12 — Remove 12.87 kg of phantom mass from the `chest_r` wrap scaffold
+Changed: `myo_sim/models/torso/assets/myotorso_assets.xml`, `myo_sim/models/torso/assets/myotorso_chain.xml`, `tests/test_chest_ownership.py`, `docs/wiki/testing-guide.md`
+Why: `chest_r` contains only muscle-wrap ellipsoids and had no `<inertial>`, and the `myotorso_wrap` default class set no mass or density, so MuJoCo meshed its six r=0.08 m spheres at the default 1000 kg/m^3 — 6 x (4/3)pi(0.08)^3 x 1000 = 12.868 kg of parasitic mass welded into the torso. `build_model("myofullbody")` totalled 97.132 kg against the MuscleMimic reference's 84.270 kg, with `chest_r` the only body that differed; MuscleMimic sets its equivalent `thorax` body to 0.001 kg, and Winter's anthropometric segment fractions applied to the thigh, shank, foot and forearm masses all imply an 81-84 kg subject. Added `mass="0"` to the `myotorso_wrap` default class so no wrap geom can ever contribute mass again, plus an explicit `mass="0.001"` inertial on `chest_r` (required — with every geom massless and no inertial, MuJoCo rejects the body with "mass and inertia must be larger than mjMINVAL"). The only other `myotorso_wrap` geom, `pelvis_wrap` in `lumbar5`, sits in a body with its own explicit 1.824 kg inertial and is unaffected. Total is now 84.265 kg and `chest_r` is the sole body whose mass changed. The explicit inertial survives `spec.to_xml()` round-tripping, so the `explicitinertial` workaround in `myo_sim/build/elastic.py` is not needed here.
+
+## 2026-08-08 — Pin minimum MuJoCo version to 3.4
+Changed: `pyproject.toml`, `uv.lock`, `.github/workflows/ci.yml`
+Why: `mujoco>=3.0` was untested — `myo_sim/build/compose.py` uses `MjSpec` APIs that raise `AttributeError`/`TypeError` on MuJoCo 3.0–3.3. Verified by running the full test suite against every MuJoCo release from 3.0.0 to 3.9.0: 3.0.0–3.3.x fail, 3.4.0–3.9.0 all pass (109 tests). Tightened the dependency floor to `mujoco>=3.4` and added a `mujoco-version: ["3.4", "latest"]` matrix axis to the CI `test` job (crossed with the existing Python matrix) so the floor is verified on every run alongside the newest release.
+
+## 2026-07-11 — Reconcile fragment and default-class naming
+Changed: `myo_sim/models/arm/assets/myoarm_r_muscle.xml` (from `_muscles`), `myoarm_r_tendon.xml` (from `_tendons`), `myo_sim/models/torso/assets/myotorso_{assets,chain,muscle,abdomen_muscle}.xml`, `myo_sim/models/leg/assets/myolegs_assets.xml`, `myo_sim/build/compose.py`, `docs/wiki/engineering-standards.md`, `docs/wiki/model-authoring.md`, `docs/wiki/repository-map.md`
+Why: Closes the naming inconsistencies behind #64 and design principle #4 of #75. The role suffix was singular everywhere (`_muscle`, `_tendon`) except the arm, which used plural `_muscles`/`_tendons`; renamed the two arm files to the singular form. The 2026-06-21 class-scoping pass fixed arm and leg but missed the torso, which still declared `myoBack_muscle`, `myoBack_wrap`, `motor`, and `sidesite` — none scoped to the part; renamed them to `myotorso_muscle`, `myotorso_back_wrap`, `myotorso_motor`, `myotorso_sidesite`, updating every `class="..."` reference while leaving the unrelated `sidesite="..."` MJCF tendon attribute untouched. Also renamed the stray singular `myoleg_matskin` material to `myolegs_matskin`. Documented the `_r` marker semantics (present only for a right-only fragment mirrored at compose time; omitted for bilateral parts like `myolegs`) and the singular-role rule in engineering-standards, and fixed the wiki examples that cited the old `myoleg_muscle`/`class="wrap"`/`myotorso_r_chain.xml` forms. Verified: `uv run ruff check .`/`format --check .` clean, full suite 105 passed, every registered model compiles via `python -m myo_sim.build.compose`. Pure renames — no numeric or structural model change.
+
+## 2026-06-29 — Restore full-body observation sensors
+Changed: `myo_sim/models/sensors/myofullbody_sensors.xml`, `myo_sim/build/compose.py`, `myo_sim/build/utils.py`, `docs/wiki/build-and-composition.md`
+Why: Added a separate sensor XML and MjSpec injection helper for the MuscleMimic full-body frame velocity sensors, restoring the 110-sensor / 322-value observation layout while keeping leg touch sensors in the leg assets.
+
+## 2026-06-26 — Document uv compose commands
+Changed: `docs/wiki/agent-workflow.md`, `docs/wiki/build-and-composition.md`
+Why: Updated compose CLI examples to use `uv run python -m myo_sim.build.compose`, keeping agent and contributor instructions aligned with the repository's `uv run` standard.
+
+## 2026-06-21 — Scope remaining generic default class names
+Changed: `myo_sim/models/arm/assets/myoarm_r_*.xml`, `myo_sim/models/leg/assets/myolegs_*.xml`, `myo_sim/models/legacy/osl/assets/myolegs_osl_*.xml`, `docs/wiki/engineering-standards.md`
+Why: `myoarm_r_assets.xml` left `arm`, `muscle`, `elbow`, `wrist`, `fingers`, `upperarm_muscle`, and `forearm_muscle` unscoped, and `myolegs_assets.xml` mixed three naming conventions (`myolegs_`, `myoleg_`, `myo_leg_`) plus a bare `coll` class — both violating the naming rule this same wiki page states. Confirmed real, not cosmetic: PR #113's bilateral `myoarms` build hit exactly these unscoped names as duplicate-class collisions requiring a sanitization workaround. Renamed every nested class to a consistent `<part>_<role>` form and updated the wiki's example (the old text cited the now-fixed `myoleg_wrap`/`myo_leg_marker` as compliant). Re-verified: `uv run ruff check .`/`format --check .` clean, full test suite (89 tests) passes, `debug_muscle_leg.py` 101/114 (same 13 pre-existing knee-actuator discrepancies as before), `debug_muscle_torso.py` 208/208, `debug_muscle_bimanual.py` 215/215 — no regressions.
+
+## 2026-06-20 — Document compose XML generation
+Changed: `docs/wiki/build-and-composition.md`
+Why: Added the `compose.py --generate` workflow and target XML outputs for primary composed model assemblies.
+
+## 2026-06-09 — Initial wiki creation
+Changed: docs/wiki/ (all files created)
+Why: Established docs/wiki/ as the persistent knowledge layer for agents and contributors, following the myosuite pattern.
