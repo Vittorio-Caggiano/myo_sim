@@ -26,6 +26,16 @@ import numpy as np
 
 DATA = Path(__file__).parent / "data" / "rajagopal2016_leg_muscles.json"
 LEG_MUSCLE_XML = Path(__file__).parents[1] / "models" / "leg" / "assets" / "myolegs_muscle.xml"
+MODELS = Path(__file__).parents[1] / "models"
+REGIONS = {  # reference data, the model to fit on, the muscle XML, and how the other side is derived
+    "leg": {"data": DATA, "model": "myolegs", "xml": LEG_MUSCLE_XML, "mirror": ("_r", "_l")},
+    "arm": {
+        "data": Path(__file__).parent / "data" / "mobl_arm_muscles.json",
+        "model": "myoarm",
+        "xml": MODELS / "arm" / "assets" / "myoarm_r_muscle.xml",
+        "mirror": None,
+    },  # left arm mirrored at compose time
+}
 
 
 def load_leg_reference() -> dict:
@@ -160,6 +170,60 @@ def leg_rigid_maps(model: mujoco.MjModel, n: int = 400, seed: int = 123) -> dict
     return maps
 
 
+def region_rigid_maps(
+    model: mujoco.MjModel, region: str, n: int = 400, seed: int = 123
+) -> dict[str, tuple[float, float, float, float]]:
+    """Fitted maps for a region's adopted muscles (``REGIONS``): random full-range postures plus single-joint sweeps."""
+    ref = json.loads(REGIONS[region]["data"].read_text())
+    ranges = {k: tuple(v) for k, v in ref["posture_ranges_rad"].items()}
+    postures = sample_postures(model, ranges, n, seed)
+    names = ref["adopted"]
+    acts = [mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, name) for name in names]
+    lengths = actuator_lengths(model, postures, acts)
+    sweeps = actuator_lengths(model, joint_sweep_postures(model, list(ranges)), acts)
+    maps = {}
+    for j, (name, a) in enumerate(zip(names, acts)):
+        p = ref["muscles"][name]
+        lmin, lmax = (float(v) for v in model.actuator_gainprm[a, 4:6])
+        maps[name] = fit_rigid_muscle_map(
+            lengths[:, j],
+            p["optimal_fiber_length"],
+            p["tendon_slack_length"],
+            p["pennation_angle"],
+            lmin,
+            lmax,
+            span_length=sweeps[:, j],
+        )
+    return maps
+
+
+def write_region_maps(maps: dict[str, tuple[float, float, float, float]], region: str) -> int:
+    """Rewrite range and lengthrange of the region's muscles (and their mirrored names, if the XML holds both sides)."""
+    cfg = REGIONS[region]
+    names = {}
+    for name, v in maps.items():
+        names[name] = v
+        if cfg["mirror"]:
+            names[name[: -len(cfg["mirror"][0])] + cfg["mirror"][1]] = v
+    return _write_maps(names, cfg["xml"])
+
+
+def _write_maps(maps: dict[str, tuple[float, float, float, float]], xml_path: Path) -> int:
+    text = xml_path.read_text()
+    for name, (r0, r1, l0, l1) in maps.items():
+        pat = re.compile(r'(<general[^>]*name="' + re.escape(name) + r'"[^>]*/>)')
+        match = pat.search(text)
+        if match is None:
+            raise KeyError(name)
+        line = match.group(1)
+        for attr in ("gainprm", "biasprm"):
+            line = re.sub(attr + r'="([^ "]+) ([^ "]+) ', lambda _m, a=attr: f'{a}="{r0:.6f} {r1:.6f} ', line, count=1)
+        line = re.sub(r'lengthrange="[^"]*"', f'lengthrange="{l0:.6f} {l1:.6f}"', line, count=1)
+        text = text[: match.start(1)] + line + text[match.end(1) :]
+    xml_path.write_text(text)
+    return len(maps)
+
+
 def write_leg_maps(maps: dict[str, tuple[float, float, float, float]], xml_path: Path = LEG_MUSCLE_XML) -> int:
     """Rewrite range (gainprm/biasprm[0:2]) and lengthrange of the right muscles and their ``_l`` mirrors in place."""
     text = xml_path.read_text()
@@ -182,16 +246,17 @@ def write_leg_maps(maps: dict[str, tuple[float, float, float, float]], xml_path:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--write", action="store_true", help="rewrite myolegs_muscle.xml (default: print the maps)")
+    ap.add_argument("--write", action="store_true", help="rewrite the region's muscle XML (default: print the maps)")
+    ap.add_argument("--region", choices=sorted(REGIONS), default="leg")
     args = ap.parse_args()
     import myo_sim
 
-    model, _ = myo_sim.load("myolegs")
-    maps = leg_rigid_maps(model)
+    model, _ = myo_sim.load(REGIONS[args.region]["model"])
+    maps = region_rigid_maps(model, args.region)
     for name, (r0, r1, l0, l1) in maps.items():
         print(f"{name:14s} range {r0:.6f} {r1:.6f}  lengthrange {l0:.6f} {l1:.6f}")
     if args.write:
-        print("rewrote", write_leg_maps(maps), "actuators in", LEG_MUSCLE_XML)
+        print("rewrote", write_region_maps(maps, args.region), "actuators in", REGIONS[args.region]["xml"])
 
 
 if __name__ == "__main__":

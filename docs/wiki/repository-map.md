@@ -21,7 +21,8 @@ myo_sim/              # installable Python package
     compose.py        # MODEL_REGISTRY, BuildStrategy, build_spec()/build_model(), SPEC_BUILDERS
     utils.py          # MirrorRules, mirror_element(), add_contact_pairs(), XML composition helpers
     hand.py           # prune_arm_spec_to_hand()
-    rigid_conversion.py  # rigid-tendon muscle maps from reference l0/lts/pennation (legs: Rajagopal 2016)
+    rigid_conversion.py  # rigid-tendon muscle maps from reference l0/lts/pennation (legs: Rajagopal 2016; arm: MoBL-ARMS)
+    data/mobl_arm_muscles.json  # MoBL-ARMS parameters, converted arm muscles and the selection rules
     data/rajagopal2016_leg_muscles.json  # reference muscle parameters and the converted-muscle list
     leg_passive.py       # leg tendon slack / fpmax fitted to measured passive moments (Silder 2007)
     data/leg_passive.json  # passive source curves, citations and the recorded fit

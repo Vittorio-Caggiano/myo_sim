@@ -1,0 +1,348 @@
+{
+ "source": "MOBL_ARMS_41.osim (MoBL-ARMS upper limb model; Holzbaur et al. 2005 Ann Biomed Eng 33:829-840, doi:10.1007/s10439-005-3320-7; Saul et al. 2015 Comput Methods Biomech Biomed Engin 18:1445-1458, doi:10.1080/10255842.2014.916698), copy from github.com/CEINMS-RT/UpperLimbModel (BSD-3), read with OpenSim 4.6",
+ "posture_ranges_rad": {
+  "elv_angle_r": [
+   -1.5707963267948966,
+   2.2689280275926285
+  ],
+  "shoulder_elv_r": [
+   0.0,
+   3.141592653589793
+  ],
+  "shoulder_rot_r": [
+   -1.5707963267948966,
+   2.0943951023931953
+  ],
+  "elbow_flexion_r": [
+   0.0,
+   2.2689280275926285
+  ],
+  "pro_sup_r": [
+   -1.5707963267948966,
+   1.5707963267948966
+  ],
+  "deviation_r": [
+   -0.17453292519943295,
+   0.4363323129985824
+  ],
+  "flexion_r": [
+   -1.2217304763960306,
+   1.2217304763960306
+  ]
+ },
+ "selection": "Two checks, decided before applying. (1) Along the measured shoulder motions of Seth et al. 2019 (Front Neurorobot 13:90, doi:10.3389/fnbot.2019.00090; 18 abduction/flexion/shrug trials, IK), for muscles whose myoarm fibre length correlates r >= 0.8 with the Seth model's (deltoids, latissimus, pectoralis, teres major, coracobrachialis, biceps long head): adopted when the MoBL-direct map's normalised fibre length is closer to Seth's (RMSE) with no more frames outside 0.5-1.5. (2) Muscles whose myoarm path agrees with MoBL-ARMS within 5 % l0 over 400 full-range postures: adopted when fibre length moves closer to OpenSim's and isometric force error rises by at most 2 % Fmax. Rotator cuff, TRIlong and the forearm/hand extrinsics are not converted (scapular kinematics differ from Seth's; hand extrinsics are refit against passive moments in Vittorio-Caggiano/myo_sim#2).",
+ "adopted": [
+  "DELT2",
+  "DELT3",
+  "TMAJ",
+  "PECM3",
+  "LAT1",
+  "LAT2",
+  "LAT3",
+  "SUBSC",
+  "ANC",
+  "BRA"
+ ],
+ "muscles": {
+  "DELT1": {
+   "optimal_fiber_length": 0.0976,
+   "tendon_slack_length": 0.093,
+   "pennation_angle": 0.383972,
+   "max_isometric_force": 1218.9
+  },
+  "DELT2": {
+   "optimal_fiber_length": 0.1078,
+   "tendon_slack_length": 0.1095,
+   "pennation_angle": 0.261799,
+   "max_isometric_force": 1103.5
+  },
+  "DELT3": {
+   "optimal_fiber_length": 0.1367,
+   "tendon_slack_length": 0.038,
+   "pennation_angle": 0.314159,
+   "max_isometric_force": 201.6
+  },
+  "SUPSP": {
+   "optimal_fiber_length": 0.0682,
+   "tendon_slack_length": 0.0395,
+   "pennation_angle": 0.122173,
+   "max_isometric_force": 499.2
+  },
+  "INFSP": {
+   "optimal_fiber_length": 0.0755,
+   "tendon_slack_length": 0.0308,
+   "pennation_angle": 0.331613,
+   "max_isometric_force": 1075.8
+  },
+  "SUBSC": {
+   "optimal_fiber_length": 0.0873,
+   "tendon_slack_length": 0.033,
+   "pennation_angle": 0.349066,
+   "max_isometric_force": 1306.9
+  },
+  "TMIN": {
+   "optimal_fiber_length": 0.0741,
+   "tendon_slack_length": 0.0713,
+   "pennation_angle": 0.418879,
+   "max_isometric_force": 269.5
+  },
+  "TMAJ": {
+   "optimal_fiber_length": 0.1624,
+   "tendon_slack_length": 0.02,
+   "pennation_angle": 0.279253,
+   "max_isometric_force": 144.0
+  },
+  "PECM1": {
+   "optimal_fiber_length": 0.1442,
+   "tendon_slack_length": 0.0028,
+   "pennation_angle": 0.296706,
+   "max_isometric_force": 444.3
+  },
+  "PECM2": {
+   "optimal_fiber_length": 0.1385,
+   "tendon_slack_length": 0.089,
+   "pennation_angle": 0.453786,
+   "max_isometric_force": 658.3
+  },
+  "PECM3": {
+   "optimal_fiber_length": 0.1385,
+   "tendon_slack_length": 0.132,
+   "pennation_angle": 0.436332,
+   "max_isometric_force": 498.1
+  },
+  "LAT1": {
+   "optimal_fiber_length": 0.254,
+   "tendon_slack_length": 0.12,
+   "pennation_angle": 0.436332,
+   "max_isometric_force": 290.5
+  },
+  "LAT2": {
+   "optimal_fiber_length": 0.2324,
+   "tendon_slack_length": 0.1765,
+   "pennation_angle": 0.331613,
+   "max_isometric_force": 317.5
+  },
+  "LAT3": {
+   "optimal_fiber_length": 0.2789,
+   "tendon_slack_length": 0.1403,
+   "pennation_angle": 0.366519,
+   "max_isometric_force": 189.0
+  },
+  "CORB": {
+   "optimal_fiber_length": 0.0932,
+   "tendon_slack_length": 0.097,
+   "pennation_angle": 0.471239,
+   "max_isometric_force": 208.2
+  },
+  "TRIlong": {
+   "optimal_fiber_length": 0.134,
+   "tendon_slack_length": 0.143,
+   "pennation_angle": 0.20944,
+   "max_isometric_force": 771.8
+  },
+  "TRIlat": {
+   "optimal_fiber_length": 0.1138,
+   "tendon_slack_length": 0.098,
+   "pennation_angle": 0.15708,
+   "max_isometric_force": 717.5
+  },
+  "TRImed": {
+   "optimal_fiber_length": 0.1138,
+   "tendon_slack_length": 0.0908,
+   "pennation_angle": 0.15708,
+   "max_isometric_force": 717.5
+  },
+  "ANC": {
+   "optimal_fiber_length": 0.027,
+   "tendon_slack_length": 0.018,
+   "pennation_angle": 0.0,
+   "max_isometric_force": 283.2
+  },
+  "SUP": {
+   "optimal_fiber_length": 0.033,
+   "tendon_slack_length": 0.028,
+   "pennation_angle": 0.0,
+   "max_isometric_force": 379.6
+  },
+  "BIClong": {
+   "optimal_fiber_length": 0.1157,
+   "tendon_slack_length": 0.2723,
+   "pennation_angle": 0.0,
+   "max_isometric_force": 525.1
+  },
+  "BICshort": {
+   "optimal_fiber_length": 0.1321,
+   "tendon_slack_length": 0.1923,
+   "pennation_angle": 0.0,
+   "max_isometric_force": 316.8
+  },
+  "BRA": {
+   "optimal_fiber_length": 0.0858,
+   "tendon_slack_length": 0.0535,
+   "pennation_angle": 0.0,
+   "max_isometric_force": 1177.37
+  },
+  "BRD": {
+   "optimal_fiber_length": 0.1726,
+   "tendon_slack_length": 0.133,
+   "pennation_angle": 0.0,
+   "max_isometric_force": 276.0
+  },
+  "ECRL": {
+   "optimal_fiber_length": 0.081,
+   "tendon_slack_length": 0.244,
+   "pennation_angle": 0.0,
+   "max_isometric_force": 337.3
+  },
+  "ECRB": {
+   "optimal_fiber_length": 0.0585,
+   "tendon_slack_length": 0.2223,
+   "pennation_angle": 0.15708,
+   "max_isometric_force": 252.5
+  },
+  "ECU": {
+   "optimal_fiber_length": 0.0622,
+   "tendon_slack_length": 0.2285,
+   "pennation_angle": 0.069813,
+   "max_isometric_force": 192.9
+  },
+  "FCR": {
+   "optimal_fiber_length": 0.0628,
+   "tendon_slack_length": 0.244,
+   "pennation_angle": 0.05236,
+   "max_isometric_force": 407.9
+  },
+  "FCU": {
+   "optimal_fiber_length": 0.0509,
+   "tendon_slack_length": 0.265,
+   "pennation_angle": 0.20944,
+   "max_isometric_force": 479.8
+  },
+  "PL": {
+   "optimal_fiber_length": 0.0638,
+   "tendon_slack_length": 0.2694,
+   "pennation_angle": 0.069813,
+   "max_isometric_force": 101.0
+  },
+  "PT": {
+   "optimal_fiber_length": 0.0492,
+   "tendon_slack_length": 0.098,
+   "pennation_angle": 0.174533,
+   "max_isometric_force": 557.2
+  },
+  "PQ": {
+   "optimal_fiber_length": 0.0282,
+   "tendon_slack_length": 0.005,
+   "pennation_angle": 0.174533,
+   "max_isometric_force": 284.7
+  },
+  "FDSL": {
+   "optimal_fiber_length": 0.0515,
+   "tendon_slack_length": 0.3386,
+   "pennation_angle": 0.087266,
+   "max_isometric_force": 75.3
+  },
+  "FDSR": {
+   "optimal_fiber_length": 0.0736,
+   "tendon_slack_length": 0.328,
+   "pennation_angle": 0.069813,
+   "max_isometric_force": 171.2
+  },
+  "FDSM": {
+   "optimal_fiber_length": 0.0749,
+   "tendon_slack_length": 0.295,
+   "pennation_angle": 0.122173,
+   "max_isometric_force": 258.8
+  },
+  "FDSI": {
+   "optimal_fiber_length": 0.0835,
+   "tendon_slack_length": 0.275,
+   "pennation_angle": 0.10472,
+   "max_isometric_force": 162.5
+  },
+  "FDPL": {
+   "optimal_fiber_length": 0.0749,
+   "tendon_slack_length": 0.2819,
+   "pennation_angle": 0.139626,
+   "max_isometric_force": 236.8
+  },
+  "FDPR": {
+   "optimal_fiber_length": 0.0798,
+   "tendon_slack_length": 0.2915,
+   "pennation_angle": 0.122173,
+   "max_isometric_force": 172.9
+  },
+  "FDPM": {
+   "optimal_fiber_length": 0.0835,
+   "tendon_slack_length": 0.303,
+   "pennation_angle": 0.10472,
+   "max_isometric_force": 212.4
+  },
+  "FDPI": {
+   "optimal_fiber_length": 0.0749,
+   "tendon_slack_length": 0.3015,
+   "pennation_angle": 0.122173,
+   "max_isometric_force": 197.3
+  },
+  "EDCL": {
+   "optimal_fiber_length": 0.065,
+   "tendon_slack_length": 0.335,
+   "pennation_angle": 0.034907,
+   "max_isometric_force": 39.4
+  },
+  "EDCR": {
+   "optimal_fiber_length": 0.0626,
+   "tendon_slack_length": 0.365,
+   "pennation_angle": 0.05236,
+   "max_isometric_force": 109.2
+  },
+  "EDCM": {
+   "optimal_fiber_length": 0.0724,
+   "tendon_slack_length": 0.365,
+   "pennation_angle": 0.05236,
+   "max_isometric_force": 94.4
+  },
+  "EDCI": {
+   "optimal_fiber_length": 0.07,
+   "tendon_slack_length": 0.365,
+   "pennation_angle": 0.05236,
+   "max_isometric_force": 48.8
+  },
+  "EDM": {
+   "optimal_fiber_length": 0.0675,
+   "tendon_slack_length": 0.335,
+   "pennation_angle": 0.05236,
+   "max_isometric_force": 72.4
+  },
+  "EIP": {
+   "optimal_fiber_length": 0.0589,
+   "tendon_slack_length": 0.21,
+   "pennation_angle": 0.10472,
+   "max_isometric_force": 47.3
+  },
+  "EPL": {
+   "optimal_fiber_length": 0.054,
+   "tendon_slack_length": 0.2305,
+   "pennation_angle": 0.10472,
+   "max_isometric_force": 88.3
+  },
+  "EPB": {
+   "optimal_fiber_length": 0.0675,
+   "tendon_slack_length": 0.1155,
+   "pennation_angle": 0.122173,
+   "max_isometric_force": 46.0
+  },
+  "FPL": {
+   "optimal_fiber_length": 0.0552,
+   "tendon_slack_length": 0.197,
+   "pennation_angle": 0.122173,
+   "max_isometric_force": 201.0
+  },
+  "APL": {
+   "optimal_fiber_length": 0.0713,
+   "tendon_slack_length": 0.1295,
+   "pennation_angle": 0.139626,
+   "max_isometric_force": 116.7
+  }
+ }
+}
