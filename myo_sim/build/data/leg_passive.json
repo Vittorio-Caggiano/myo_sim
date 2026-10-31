@@ -190,9 +190,7 @@
    },
    "peak_deg": 23.4,
    "muscles": [
-    "soleus",
-    "gasmed",
-    "gaslat"
+    "soleus"
    ]
   }
  },
@@ -202,24 +200,24 @@
    "semimem_r": {
     "slack_shift_L0": 0.15,
     "slack_shift_m": 0.01269,
-    "fpmax": 0.0461,
+    "fpmax": 0.044,
     "fpmax_before": 1.5
    },
    "semiten_r": {
     "slack_shift_L0": -0.15,
     "slack_shift_m": -0.02986,
-    "fpmax": 1.1213,
+    "fpmax": 0.9532,
     "fpmax_before": 1.5748
    },
    "bflh_r": {
     "slack_shift_L0": 0.15,
     "slack_shift_m": 0.01528,
-    "fpmax": 2.2931,
+    "fpmax": 2.5137,
     "fpmax_before": 1.5
    },
    "bfsh_r": {
-    "slack_shift_L0": 0.119,
-    "slack_shift_m": 0.01382,
+    "slack_shift_L0": 0.1263,
+    "slack_shift_m": 0.01466,
     "fpmax": 2.6,
     "fpmax_before": 1.5809
    },
@@ -230,57 +228,57 @@
     "fpmax_before": 1.7817
    },
    "vaslat_r": {
-    "slack_shift_L0": 0.1358,
-    "slack_shift_m": 0.02344,
-    "fpmax": 1.2956,
+    "slack_shift_L0": 0.1377,
+    "slack_shift_m": 0.02376,
+    "fpmax": 1.3363,
     "fpmax_before": 2.0
    },
    "vasmed_r": {
     "slack_shift_L0": -0.1224,
     "slack_shift_m": -0.01273,
-    "fpmax": 0.48,
+    "fpmax": 0.6555,
     "fpmax_before": 1.4062
    },
    "vasint_r": {
     "slack_shift_L0": -0.1436,
     "slack_shift_m": -0.01428,
-    "fpmax": 0.1743,
+    "fpmax": 0.2658,
     "fpmax_before": 0.9932
    },
    "gasmed_r": {
-    "slack_shift_L0": 0.15,
-    "slack_shift_m": 0.00765,
-    "fpmax": 0.8584,
+    "slack_shift_L0": -0.0346,
+    "slack_shift_m": -0.00177,
+    "fpmax": 0.0858,
     "fpmax_before": 1.5
    },
    "gaslat_r": {
-    "slack_shift_L0": -0.1136,
-    "slack_shift_m": -0.00706,
+    "slack_shift_L0": -0.0904,
+    "slack_shift_m": -0.00562,
     "fpmax": 2.6,
     "fpmax_before": 1.9036
    },
    "soleus_r": {
-    "slack_shift_L0": -0.0254,
-    "slack_shift_m": -0.00112,
-    "fpmax": 0.4798,
+    "slack_shift_L0": -0.04,
+    "slack_shift_m": -0.00176,
+    "fpmax": 0.5433,
     "fpmax_before": 1.5467
    },
    "tibpost_r": {
-    "slack_shift_L0": -0.0056,
-    "slack_shift_m": -0.00021,
-    "fpmax": 1.3547,
+    "slack_shift_L0": -0.0057,
+    "slack_shift_m": -0.00022,
+    "fpmax": 1.3579,
     "fpmax_before": 1.3406
    },
    "fdl_r": {
-    "slack_shift_L0": -0.0004,
+    "slack_shift_L0": -0.0003,
     "slack_shift_m": -2e-05,
-    "fpmax": 1.8884,
+    "fpmax": 1.8898,
     "fpmax_before": 1.8954
    },
    "fhl_r": {
-    "slack_shift_L0": 0.0007,
+    "slack_shift_L0": 0.0008,
     "slack_shift_m": 4e-05,
-    "fpmax": 1.0209,
+    "fpmax": 1.0231,
     "fpmax_before": 1.031
    },
    "perlong_r": {
@@ -296,15 +294,15 @@
     "fpmax_before": 1.8001
    },
    "iliacus_r": {
-    "slack_shift_L0": -0.1232,
-    "slack_shift_m": -0.01313,
+    "slack_shift_L0": -0.126,
+    "slack_shift_m": -0.01343,
     "fpmax": 2.6,
     "fpmax_before": 1.8211
    },
    "psoas_r": {
     "slack_shift_L0": -0.114,
-    "slack_shift_m": -0.01376,
-    "fpmax": 0.5718,
+    "slack_shift_m": -0.01375,
+    "fpmax": 0.5424,
     "fpmax_before": 1.4787
    },
    "tfl_r": {
@@ -314,38 +312,38 @@
     "fpmax_before": 1.5
    },
    "sart_r": {
-    "slack_shift_L0": 0.079,
-    "slack_shift_m": 0.03184,
-    "fpmax": 0.4087,
+    "slack_shift_L0": 0.08,
+    "slack_shift_m": 0.03223,
+    "fpmax": 0.4093,
     "fpmax_before": 0.8066
    },
    "glmax1_r": {
     "slack_shift_L0": 0.15,
     "slack_shift_m": 0.02205,
-    "fpmax": 0.0667,
+    "fpmax": 0.0704,
     "fpmax_before": 1.8662
    },
    "glmax2_r": {
-    "slack_shift_L0": 0.0923,
-    "slack_shift_m": 0.01524,
-    "fpmax": 0.03,
+    "slack_shift_L0": 0.0904,
+    "slack_shift_m": 0.01493,
+    "fpmax": 0.0313,
     "fpmax_before": 1.2246
    },
    "glmax3_r": {
     "slack_shift_L0": 0.0,
     "slack_shift_m": 0.0,
-    "fpmax": 0.0151,
+    "fpmax": 0.0161,
     "fpmax_before": 1.3707
    },
    "addmagDist_r": {
-    "slack_shift_L0": -0.0059,
-    "slack_shift_m": -0.00106,
+    "slack_shift_L0": -0.0068,
+    "slack_shift_m": -0.00123,
     "fpmax": 2.6,
     "fpmax_before": 1.6078
    },
    "addmagIsch_r": {
-    "slack_shift_L0": 0.1016,
-    "slack_shift_m": 0.01587,
+    "slack_shift_L0": 0.1,
+    "slack_shift_m": 0.01562,
     "fpmax": 2.6,
     "fpmax_before": 1.6643
    },
@@ -362,19 +360,70 @@
     "fpmax_before": 1.3818
    }
   },
+  "fascicle_mm": {
+   "target": [
+    57.0,
+    50.8,
+    41.7
+   ],
+   "before": [
+    62.8,
+    47.7,
+    33.5
+   ],
+   "after": [
+    64.6,
+    49.5,
+    35.2
+   ]
+  },
   "rms_Nm_before": {
    "hip": 19.77,
-   "knee": 10.16,
+   "knee": 11.17,
    "ankle": 2.57
   },
   "rms_Nm_after": {
-   "hip": 10.98,
-   "knee": 8.19,
-   "ankle": 1.96
+   "hip": 11.0,
+   "knee": 8.38,
+   "ankle": 2.06
   },
   "min_active_fl_at_strength_postures": {
    "before": 0.524,
    "after": 0.5
   }
- }
+ },
+ "fascicle_targets": {
+  "source": "Narici MV et al. (1996) J Physiol 496:287-297, doi:10.1113/jphysiol.1996.sp021685: medial gastrocnemius fascicle length at rest, knee extended, 57.0 mm at ankle 90 deg (neutral) to 34.0 mm at 150 deg (60 deg plantarflexion), 50.8 mm at 110 deg",
+  "rows": [
+   {
+    "muscle": "gasmed",
+    "posture_deg": {
+     "hip_flexion_r": 0,
+     "knee_angle_r": 0,
+     "ankle_angle_r": 0
+    },
+    "mm": 57.0
+   },
+   {
+    "muscle": "gasmed",
+    "posture_deg": {
+     "hip_flexion_r": 0,
+     "knee_angle_r": 0,
+     "ankle_angle_r": -20
+    },
+    "mm": 50.8
+   },
+   {
+    "muscle": "gasmed",
+    "posture_deg": {
+     "hip_flexion_r": 0,
+     "knee_angle_r": 0,
+     "ankle_angle_r": -40
+    },
+    "mm": 41.7
+   }
+  ],
+  "weight_Nm_per_mm": 2.0
+ },
+ "strength_postures_note": "Plantarflexion was tested with the knee flexed 50 deg, which shortens the gastrocnemius (soleus-dominated strength), so only soleus is constrained there; gastrocnemius operating lengths are constrained by the ultrasound fascicle targets."
 }

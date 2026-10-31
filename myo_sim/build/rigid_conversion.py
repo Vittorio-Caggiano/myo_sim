@@ -3,7 +3,7 @@
 MuJoCo's muscle maps the actuator length ``L`` linearly to a normalised fibre length,
 ``ln = range0 + (L - lengthrange0) * (range1 - range0) / (lengthrange1 - lengthrange0)``, with a rigid tendon and no pennation.
 For an OpenSim muscle with optimal fibre length ``l0``, tendon slack length ``lts`` and pennation ``alpha0`` (constant width), the
-rigid-tendon fibre length is ``sqrt((L - lts)^2 + (l0 sin alpha0)^2) / l0``. ``fit_rigid_muscle_map`` fits MuJoCo's linear map to
+rigid-tendon fibre length is ``sqrt(max(L - lts, 0)^2 + (l0 sin alpha0)^2) / l0``. ``fit_rigid_muscle_map`` fits MuJoCo's linear map to
 it over sampled path lengths, so the converted muscle operates at the reference's fibre lengths without refitting ``l0`` to a
 measured length range.
 
@@ -106,6 +106,27 @@ def actuator_lengths(model: mujoco.MjModel, postures: np.ndarray, actuators: lis
         mujoco.mj_fwdPosition(model, data)
         out[k] = data.actuator_length[actuators]
     return out
+
+
+def effective_moment_arms(
+    model: mujoco.MjModel, joints: dict[str, float], coords: list[str], acts: list[int], h: float = 1e-4
+) -> tuple[np.ndarray, np.ndarray]:
+    """Actuator lengths and dL/dtheta for the independent coordinates ``coords`` at the posture ``joints`` (rad).
+
+    The derivative is taken with the joint-equality followers resolved (e.g. knee translations and patella), so it is the
+    moment arm about the anatomical coordinate; ``data.actuator_moment`` at one DOF alone misses the followers' part.
+    Returns lengths (len(acts),) and arms (len(acts), len(coords)); the moment of a tension T is ``-T * arm``.
+    """
+
+    def lengths(j: dict[str, float]) -> np.ndarray:
+        return actuator_lengths(model, sample_postures(model, {k: (v, v) for k, v in j.items()}, 1, 0), acts)[0]
+
+    arms = np.zeros((len(acts), len(coords)))
+    for i, c in enumerate(coords):
+        up, dn = dict(joints), dict(joints)
+        up[c], dn[c] = joints.get(c, 0.0) + h, joints.get(c, 0.0) - h
+        arms[:, i] = (lengths(up) - lengths(dn)) / (2 * h)
+    return lengths(joints), arms
 
 
 def mujoco_fiber_length(model: mujoco.MjModel, actuator: int, length: np.ndarray) -> np.ndarray:
