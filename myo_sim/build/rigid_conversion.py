@@ -39,16 +39,25 @@ def rigid_equivalent_fiber_length(path_length: np.ndarray, l0: float, lts: float
 
 
 def fit_rigid_muscle_map(
-    path_length: np.ndarray, l0: float, lts: float, alpha0: float, lmin: float, lmax: float, margin: float = 0.02
+    path_length: np.ndarray,
+    l0: float,
+    lts: float,
+    alpha0: float,
+    lmin: float,
+    lmax: float,
+    span_length: np.ndarray | None = None,
+    margin: float = 0.02,
 ) -> tuple[float, float, float, float]:
     """Least-squares MuJoCo map ``(range0, range1, lengthrange0, lengthrange1)`` for the sampled path lengths.
 
-    The anchors are the path's sampled extremes, moved inward where the fitted map would leave ``(lmin, lmax)`` (MuJoCo
-    extrapolates the same linear map beyond ``lengthrange``, where the force-length curve is zero).
+    The map is fitted on ``path_length``; ``lengthrange`` spans ``span_length`` (default: the same samples), e.g. the fit
+    sample plus single-joint sweeps over the full joint ranges. An anchor moves inward only where the fitted map would leave
+    ``(lmin, lmax)`` there (a slack rigid tendon); MuJoCo extrapolates the same linear map beyond ``lengthrange``.
     """
     path_length = np.asarray(path_length, float)
+    span = path_length if span_length is None else np.concatenate([path_length, np.asarray(span_length, float)])
     slope, icpt = np.polyfit(path_length, rigid_equivalent_fiber_length(path_length, l0, lts, alpha0), 1)
-    lr0, lr1 = float(path_length.min()), float(path_length.max())
+    lr0, lr1 = float(span.min()), float(span.max())
     lr0 = max(lr0, (lmin + margin - icpt) / slope)
     lr1 = min(lr1, (lmax - margin - icpt) / slope)
     return float(icpt + slope * lr0), float(icpt + slope * lr1), lr0, lr1
@@ -78,6 +87,17 @@ def sample_postures(model: mujoco.MjModel, ranges: dict[str, tuple[float, float]
     return out
 
 
+def joint_sweep_postures(model: mujoco.MjModel, joints: list[str], n: int = 41) -> np.ndarray:
+    """Each joint swept alone over its full model range (others at qpos0), joint-equality followers resolved."""
+    out = []
+    for name in joints:
+        j = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, name)
+        lo, hi = model.jnt_range[j]
+        for v in np.linspace(lo, hi, n):
+            out.append(sample_postures(model, {name: (float(v), float(v))}, n=1, seed=0)[0])
+    return np.array(out)
+
+
 def actuator_lengths(model: mujoco.MjModel, postures: np.ndarray, actuators: list[int]) -> np.ndarray:
     data = mujoco.MjData(model)
     out = np.zeros((len(postures), len(actuators)))
@@ -102,12 +122,19 @@ def leg_rigid_maps(model: mujoco.MjModel, n: int = 400, seed: int = 123) -> dict
     names = ref["adopted"]
     acts = [mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, name) for name in names]
     lengths = actuator_lengths(model, postures, acts)
+    sweeps = actuator_lengths(model, joint_sweep_postures(model, list(ref["posture_ranges_rad"])), acts)
     maps = {}
     for j, (name, a) in enumerate(zip(names, acts)):
         p = ref["muscles"][name]
         lmin, lmax = (float(v) for v in model.actuator_gainprm[a, 4:6])
         maps[name] = fit_rigid_muscle_map(
-            lengths[:, j], p["optimal_fiber_length"], p["tendon_slack_length"], p["pennation_angle"], lmin, lmax
+            lengths[:, j],
+            p["optimal_fiber_length"],
+            p["tendon_slack_length"],
+            p["pennation_angle"],
+            lmin,
+            lmax,
+            span_length=sweeps[:, j],
         )
     return maps
 
