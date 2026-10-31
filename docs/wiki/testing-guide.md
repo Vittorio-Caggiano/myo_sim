@@ -15,6 +15,7 @@ Map of the test suite for agents working in `myo_sim`.
 | `test_passive_torso_build.py` | Passive torso scaffold builds without error | After torso XML or compose changes |
 | `test_legs_abdomen_build.py` | `myolegs_abdomen` model builds without error | After legs or abdomen changes |
 | `test_leg_muscle_symmetry.py` | Leg muscle moment arms are symmetric between left and right | After `myolegs` XML changes |
+| `test_leg_rigid_conversion.py` | Converted leg muscle maps match the Rajagopal (2016) rigid-tendon fibre lengths over the full joint range; L/R identical; inside force-length bounds | After `myolegs_muscle.xml` or `build/rigid_conversion.py` changes |
 | `test_torso_muscle_symmetry.py` | Torso muscle moment arms are symmetric between left and right | After `myotorso` XML changes |
 | `test_equivalence.py` | `myofullbody` joint and actuator counts match musclemimic reference spec | Manual only — needs musclemimic reference values |
 | `test_bimanual_muscle_symmetry.py` | Bimanual arm muscle moment arms are symmetric | Manual only |
@@ -53,6 +54,7 @@ These scripts produce diagnostic plots and are not collected by pytest. Run them
 cd tests && uv run python debug_muscle_leg.py
 cd tests && uv run python debug_muscle_torso.py
 cd tests && uv run python debug_muscle_bimanual.py
+cd tests && uv run python debug_leg_physiology.py   # myolegs vs human experimental data (strength, fibre length, passive)
 ```
 
 Output goes to `tests/output/muscle_analysis/`. The scripts use helpers from `muscle_analysis_utils.py`:
