@@ -22,6 +22,22 @@ MuJoCo musculoskeletal model of the bilateral lower extremity, derived from Raja
 
 Example fidelity check (glmax1 left/right moment-arm and force-length plot) for symmetry and muscle jumping for lower limb. The full leg muscle check can be run with `tests/debug_muscle_leg.py`.
 
+<!-- TODO: review (quantitative fidelity claims; reproduce with the commands below) -->
+Muscle fibre lengths follow the reference model: for the 24 muscles converted directly from Rajagopal et al. (2016)
+(`myo_sim/build/rigid_conversion.py`; list in `myo_sim/build/data/rajagopal2016_leg_muscles.json`), MuJoCo's normalised fibre
+length matches the reference's rigid-tendon fibre length to RMSE < 0.06 over the full joint range (semimembranosus 0.12)
+(`tests/test_leg_rigid_conversion.py`), and to a median 0.02 (max 0.10, semimembranosus) against OpenSim's own (Millard, elastic tendon, passive) fibre length
+over 400 full-range postures.
+
+Comparison with human experimental data (`tests/debug_leg_physiology.py`):
+
+| Measure | Human | This model |
+|---|---|---|
+| Optimal fibre length, 35 muscle parts within 1 SD of cadaver data ([Ward et al. 2009](https://doi.org/10.1007/s11999-008-0594-8)) | — | 30 / 35 (mean error 11.6 %) |
+| Medial gastrocnemius fascicle at rest, knee extended, ankle 0 / 20 / 40 deg plantarflexion ([Narici et al. 1996](https://doi.org/10.1113/jphysiol.1996.sp021685)) | 57 / 49 / 42 mm | 63 / 48 / 34 mm |
+| Passive knee moment, hip flexed 70 deg, knee extended ([Anderson et al. 2007](https://doi.org/10.1016/j.jbiomech.2007.03.022)) | 6 Nm | 41 Nm |
+| Peak maximal isometric torque, model / human, hip and knee flexion and extension, plantar- and dorsiflexion ([Anderson et al. 2007](https://doi.org/10.1016/j.jbiomech.2007.03.022), young males) | 1 | 1.5–3.6 |
+
 
 ## Known limitations
 
@@ -29,6 +45,12 @@ Example fidelity check (glmax1 left/right moment-arm and force-length plot) for 
 - [ ] Endpoints (markers) below the knee joints have approximately 1 cm position differences between the converted MuJoCo and OpenSim model. This may be due to the polynomial approximation of the OpenSim lookup table for knee translation degrees of freedom.
 - [ ] Vastus muscle moment arms at the knee joint have relatively large differences (same sign, a few cm). This may be caused by the dependent joint constraints at the knee and also affects knee extensor muscle force.
 - [ ] Muscle forces are not identical between the converted MuJoCo and OpenSim models due to differences in muscle model definitions (stiff vs. elastic tendons). Elastic tendon support in MuJoCo is not yet implemented for this model.
+- [ ] Maximal isometric strength is 1.5–3.6x human dynamometry (Anderson et al. 2007) and several torque-angle peaks are
+  shifted (e.g. plantarflexion peaks near neutral instead of ~23 deg dorsiflexion). The reference model (Rajagopal2016.osim
+  in OpenSim) shows the same (e.g. plantarflexion ~395 Nm vs ~137 Nm human), so this is inherited rather than a conversion
+  error; an experimental calibration of strength and passive stiffness would be a separate, opt-in variant.
+- [ ] The passive hamstring moment with the hip flexed and the knee extended (41 Nm) exceeds the human value (6 Nm); the
+  reference model is stiffer still (~89 Nm in OpenSim).
 - [ ] Muscle moment arms in the reference OpenSim model contain sudden changes (wrapping path jumps), which required the manual adjustments described below.
 
 ## Manual adjustments
@@ -40,6 +62,17 @@ Example fidelity check (glmax1 left/right moment-arm and force-length plot) for 
 - Contact geometries based on the [Yeadon measurement method](https://yeadon.readthedocs.io/en/latest/measurements.html#measurements), slightly adjusted to fit the MuJoCo MSK model. Contact properties were optimized for contact-rich behaviors.
 
 ## Changelog
+
+**2026-10-31** — Rigid-tendon maps (`range`, `lengthrange`) of 24 leg muscles derived directly from Rajagopal2016's
+optimal fibre length, tendon slack length and pennation over the full joint range (`myo_sim/build/rigid_conversion.py`),
+instead of fitting the optimal fibre length to a gait-range `lengthrange`. Fixes semimembranosus, which the 2026-08-02 refit
+put at ln ~1.9 standing and ~2.9 with the hip flexed (Rajagopal: ~0.95 and ~1.65), giving a 138 Nm passive knee moment (now
+41 Nm; human 6 Nm). A muscle was converted only where its fibre length moved closer to OpenSim's and its isometric force error
+did not rise by more than 2 % of Fmax; rectus femoris, vastus lateralis and gluteus maximus 3 keep their previous maps (their
+force error rises), as the 2026-08-02 analysis found. Strength (Fmax) is unchanged.
+
+**2026-08-02** — Restored anatomical optimal fiber length (`L0`), tendon slack length (`LT`), and peak isometric force (`Fmax`) from Rajagopal2016 for 6 of the 10 muscles whose `L0` was inflated >1.2x due to an oversized `lengthrange` (`bflh`, `gasmed`, `tfl`, `glmin3`, `piri`, `semimem`, both sides), after remeasuring `lengthrange` over a physiological gait-ROM sample. `recfem`, `vasint`, `vaslat`, and `glmax3` were left unchanged because anatomical retuning increased force error against the OpenSim reference.
+
 
 **2026-06-04** — Refactored model loading to use updated leg model XML; added muscle symmetry checks and contact assertion tests.
 

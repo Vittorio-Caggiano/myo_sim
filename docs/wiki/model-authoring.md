@@ -78,6 +78,32 @@ uv run pytest tests/test_leg_muscle_symmetry.py
 
 ---
 
+## Setting rigid-tendon muscle parameters from the reference model
+
+MuJoCo's muscle maps the actuator length linearly to a normalised fibre length,
+`ln = range0 + (L - lengthrange0) * (range1 - range0) / (lengthrange1 - lengthrange0)`, with a rigid tendon and no pennation.
+To make a converted muscle operate at the reference model's fibre lengths, derive the map from the reference muscle's optimal
+fibre length `l0`, tendon slack length `lts` and pennation `alpha0` (rigid-tendon fibre length
+`sqrt((L - lts)^2 + (l0 sin alpha0)^2) / l0`), fitted over the path lengths of a posture sample covering the full joint range.
+Do not fit `l0` to a measured `lengthrange` from a restricted (e.g. gait) posture set: MuJoCo extrapolates the map outside it,
+and a long-tendon muscle can then reach unphysiological fibre lengths (semimembranosus reached ln ~2.9 with the hip flexed).
+
+`myo_sim/build/rigid_conversion.py` does this for the legs from the packaged Rajagopal et al. (2016) values
+(`myo_sim/build/data/rajagopal2016_leg_muscles.json`, which also records which muscles use it and why):
+
+```bash
+uv run python -m myo_sim.build.rigid_conversion          # print the fitted maps
+uv run python -m myo_sim.build.rigid_conversion --write  # rewrite range and lengthrange in myolegs_muscle.xml
+uv run pytest tests/test_leg_rigid_conversion.py
+cd tests && uv run python debug_leg_physiology.py        # compare with human experimental data
+```
+
+A rigid tendon cannot reproduce the reference's elastic-tendon forces exactly. Keep the previous map where the direct one
+increases the isometric force error against the reference (e.g. rectus femoris, vastus lateralis, gluteus maximus 3); the
+selection rule and the muscles kept are recorded in the data file.
+
+---
+
 ## Adding a wrapping object
 
 Wrapping geoms live in `*_chain.xml` on the body they geometrically belong to. Use the part-specific wrap default class, e.g. `class="myolegs_wrap"`.
