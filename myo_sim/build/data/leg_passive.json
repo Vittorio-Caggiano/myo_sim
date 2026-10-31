@@ -1,0 +1,380 @@
+{
+ "source": "Silder A, Whittington B, Heiderscheit B, Thelen DG (2007) Identification of passive elastic joint moment-angle relationships in the lower extremity. J Biomech 40:2628-2635. doi:10.1016/j.jbiomech.2006.12.017",
+ "data": "Table 4: mean gains b and offsets a (deg) over 20 healthy young adults (9 male, 11 female), side-lying, relaxed (EMG-checked), 15 trials stretching hip, knee and ankle combinations (Table 2). Model (Appendix, Eqs. A.1-A.7): uni-articular M = exp(b (theta - a)); bi-articular functions exp(b_prox (theta_prox - (b_dist / b_prox) theta_dist - a)) with distal moment scaled by -b_dist / b_prox (energy conserving). Angles in rad (offsets converted), flexion / dorsiflexion positive, moments positive in flexion / dorsiflexion.",
+ "check": "Anderson DE, Madigan ML, Nussbaum MA (2007) J Biomech 40:3105-3113, doi:10.1016/j.jbiomech.2007.03.022 (single-joint dynamometer passive torque, young males) is used as an independent check in tests/debug_leg_physiology.py.",
+ "params": {
+  "RF": {
+   "b_prox": 3.1,
+   "b_dist": 1.9,
+   "a_deg": 24.4
+  },
+  "HAM": {
+   "b_prox": 5.1,
+   "b_dist": 3.9,
+   "a_deg": 30.8
+  },
+  "GAS": {
+   "b_prox": 4.5,
+   "b_dist": 4.7,
+   "a_deg": 26.0
+  },
+  "HF": {
+   "b": 5.1,
+   "a_deg": 19.5
+  },
+  "HE": {
+   "b": 2.0,
+   "a_deg": 27.3
+  },
+  "KF": {
+   "b": 5.8,
+   "a_deg": 12.8
+  },
+  "KE": {
+   "b": 3.5,
+   "a_deg": 101.9
+  },
+  "PF": {
+   "b": 4.9,
+   "a_deg": -3.4
+  }
+ },
+ "postures_deg": {
+  "hip_knee_grid": {
+   "hip": [
+    -15,
+    0,
+    15,
+    30,
+    45,
+    60,
+    75,
+    85
+   ],
+   "knee": [
+    0,
+    10,
+    20,
+    35,
+    60,
+    90,
+    120
+   ],
+   "ankle": -20
+  },
+  "ankle_sweep": {
+   "hip": 15,
+   "knee": [
+    0,
+    30,
+    60,
+    90,
+    120
+   ],
+   "ankle": [
+    -20,
+    -10,
+    0,
+    10,
+    20
+   ]
+  }
+ },
+ "groups": {
+  "hamstrings": [
+   "semimem",
+   "semiten",
+   "bflh"
+  ],
+  "knee_flexors_uni": [
+   "bfsh"
+  ],
+  "rectus_femoris": [
+   "recfem"
+  ],
+  "knee_extensors": [
+   "vaslat",
+   "vasmed",
+   "vasint"
+  ],
+  "gastrocnemius": [
+   "gasmed",
+   "gaslat"
+  ],
+  "plantarflexors_uni": [
+   "soleus",
+   "tibpost",
+   "fdl",
+   "fhl",
+   "perlong",
+   "perbrev"
+  ],
+  "hip_flexors": [
+   "iliacus",
+   "psoas",
+   "tfl",
+   "sart"
+  ],
+  "hip_extensors": [
+   "glmax1",
+   "glmax2",
+   "glmax3",
+   "addmagDist",
+   "addmagIsch",
+   "addmagMid",
+   "addmagProx"
+  ]
+ },
+ "strength_postures": {
+  "hip_extension": {
+   "joint": "hip_flexion_r",
+   "posture_deg": {
+    "knee_angle_r": 10
+   },
+   "peak_deg": 53.4,
+   "muscles": [
+    "glmax1",
+    "glmax2",
+    "glmax3",
+    "addmagIsch",
+    "semimem",
+    "semiten",
+    "bflh"
+   ]
+  },
+  "hip_flexion": {
+   "joint": "hip_flexion_r",
+   "posture_deg": {
+    "knee_angle_r": 10
+   },
+   "peak_deg": -12.3,
+   "muscles": [
+    "iliacus",
+    "psoas",
+    "recfem",
+    "tfl",
+    "sart"
+   ]
+  },
+  "knee_extension": {
+   "joint": "knee_angle_r",
+   "posture_deg": {
+    "hip_flexion_r": 70
+   },
+   "peak_deg": 64.9,
+   "muscles": [
+    "vaslat",
+    "vasmed",
+    "vasint",
+    "recfem"
+   ]
+  },
+  "knee_flexion": {
+   "joint": "knee_angle_r",
+   "posture_deg": {
+    "hip_flexion_r": 70
+   },
+   "peak_deg": 29.9,
+   "muscles": [
+    "semimem",
+    "semiten",
+    "bflh",
+    "bfsh"
+   ]
+  },
+  "plantarflexion": {
+   "joint": "ankle_angle_r",
+   "posture_deg": {
+    "hip_flexion_r": 80,
+    "knee_angle_r": 50
+   },
+   "peak_deg": 23.4,
+   "muscles": [
+    "soleus",
+    "gasmed",
+    "gaslat"
+   ]
+  }
+ },
+ "strength_postures_source": "Anderson et al. 2007, Table 3 young males: C3 (angle of maximal isometric torque) per exertion, in the study's test postures.",
+ "fit": {
+  "muscles": {
+   "semimem_r": {
+    "slack_shift_L0": 0.15,
+    "slack_shift_m": 0.01269,
+    "fpmax": 0.0461,
+    "fpmax_before": 1.5
+   },
+   "semiten_r": {
+    "slack_shift_L0": -0.15,
+    "slack_shift_m": -0.02986,
+    "fpmax": 1.1213,
+    "fpmax_before": 1.5748
+   },
+   "bflh_r": {
+    "slack_shift_L0": 0.15,
+    "slack_shift_m": 0.01528,
+    "fpmax": 2.2931,
+    "fpmax_before": 1.5
+   },
+   "bfsh_r": {
+    "slack_shift_L0": 0.119,
+    "slack_shift_m": 0.01382,
+    "fpmax": 2.6,
+    "fpmax_before": 1.5809
+   },
+   "recfem_r": {
+    "slack_shift_L0": -0.0,
+    "slack_shift_m": -0.0,
+    "fpmax": 1.7817,
+    "fpmax_before": 1.7817
+   },
+   "vaslat_r": {
+    "slack_shift_L0": 0.1358,
+    "slack_shift_m": 0.02344,
+    "fpmax": 1.2956,
+    "fpmax_before": 2.0
+   },
+   "vasmed_r": {
+    "slack_shift_L0": -0.1224,
+    "slack_shift_m": -0.01273,
+    "fpmax": 0.48,
+    "fpmax_before": 1.4062
+   },
+   "vasint_r": {
+    "slack_shift_L0": -0.1436,
+    "slack_shift_m": -0.01428,
+    "fpmax": 0.1743,
+    "fpmax_before": 0.9932
+   },
+   "gasmed_r": {
+    "slack_shift_L0": 0.15,
+    "slack_shift_m": 0.00765,
+    "fpmax": 0.8584,
+    "fpmax_before": 1.5
+   },
+   "gaslat_r": {
+    "slack_shift_L0": -0.1136,
+    "slack_shift_m": -0.00706,
+    "fpmax": 2.6,
+    "fpmax_before": 1.9036
+   },
+   "soleus_r": {
+    "slack_shift_L0": -0.0254,
+    "slack_shift_m": -0.00112,
+    "fpmax": 0.4798,
+    "fpmax_before": 1.5467
+   },
+   "tibpost_r": {
+    "slack_shift_L0": -0.0056,
+    "slack_shift_m": -0.00021,
+    "fpmax": 1.3547,
+    "fpmax_before": 1.3406
+   },
+   "fdl_r": {
+    "slack_shift_L0": -0.0004,
+    "slack_shift_m": -2e-05,
+    "fpmax": 1.8884,
+    "fpmax_before": 1.8954
+   },
+   "fhl_r": {
+    "slack_shift_L0": 0.0007,
+    "slack_shift_m": 4e-05,
+    "fpmax": 1.0209,
+    "fpmax_before": 1.031
+   },
+   "perlong_r": {
+    "slack_shift_L0": -0.0893,
+    "slack_shift_m": -0.00467,
+    "fpmax": 2.6,
+    "fpmax_before": 1.1497
+   },
+   "perbrev_r": {
+    "slack_shift_L0": -0.0794,
+    "slack_shift_m": -0.00367,
+    "fpmax": 2.6,
+    "fpmax_before": 1.8001
+   },
+   "iliacus_r": {
+    "slack_shift_L0": -0.1232,
+    "slack_shift_m": -0.01313,
+    "fpmax": 2.6,
+    "fpmax_before": 1.8211
+   },
+   "psoas_r": {
+    "slack_shift_L0": -0.114,
+    "slack_shift_m": -0.01376,
+    "fpmax": 0.5718,
+    "fpmax_before": 1.4787
+   },
+   "tfl_r": {
+    "slack_shift_L0": -0.15,
+    "slack_shift_m": -0.01425,
+    "fpmax": 2.6,
+    "fpmax_before": 1.5
+   },
+   "sart_r": {
+    "slack_shift_L0": 0.079,
+    "slack_shift_m": 0.03184,
+    "fpmax": 0.4087,
+    "fpmax_before": 0.8066
+   },
+   "glmax1_r": {
+    "slack_shift_L0": 0.15,
+    "slack_shift_m": 0.02205,
+    "fpmax": 0.0667,
+    "fpmax_before": 1.8662
+   },
+   "glmax2_r": {
+    "slack_shift_L0": 0.0923,
+    "slack_shift_m": 0.01524,
+    "fpmax": 0.03,
+    "fpmax_before": 1.2246
+   },
+   "glmax3_r": {
+    "slack_shift_L0": 0.0,
+    "slack_shift_m": 0.0,
+    "fpmax": 0.0151,
+    "fpmax_before": 1.3707
+   },
+   "addmagDist_r": {
+    "slack_shift_L0": -0.0059,
+    "slack_shift_m": -0.00106,
+    "fpmax": 2.6,
+    "fpmax_before": 1.6078
+   },
+   "addmagIsch_r": {
+    "slack_shift_L0": 0.1016,
+    "slack_shift_m": 0.01587,
+    "fpmax": 2.6,
+    "fpmax_before": 1.6643
+   },
+   "addmagMid_r": {
+    "slack_shift_L0": -0.0,
+    "slack_shift_m": -0.0,
+    "fpmax": 1.694,
+    "fpmax_before": 1.694
+   },
+   "addmagProx_r": {
+    "slack_shift_L0": -0.0,
+    "slack_shift_m": -0.0,
+    "fpmax": 1.3818,
+    "fpmax_before": 1.3818
+   }
+  },
+  "rms_Nm_before": {
+   "hip": 19.77,
+   "knee": 10.16,
+   "ankle": 2.57
+  },
+  "rms_Nm_after": {
+   "hip": 10.98,
+   "knee": 8.19,
+   "ankle": 1.96
+  },
+  "min_active_fl_at_strength_postures": {
+   "before": 0.524,
+   "after": 0.5
+  }
+ }
+}

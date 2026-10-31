@@ -2,7 +2,8 @@
 
 For the muscles converted with ``myo_sim.build.rigid_conversion`` (listed as ``adopted`` in
 ``myo_sim/build/data/rajagopal2016_leg_muscles.json``), MuJoCo's normalised fibre length over a full-range posture sample must
-match the reference's rigid-tendon fibre length, left and right maps must be identical, and the maps must stay inside the
+match the reference's rigid-tendon fibre length (less the tendon slack shift of the passive calibration in
+``build/data/leg_passive.json``), left and right maps must be identical, and the maps must stay inside the
 force-length bounds. The semimembranosus check guards the regression where an oversized fit put it at ln ~1.9 standing
 (Rajagopal: ~0.95).
 """
@@ -12,6 +13,7 @@ import numpy as np
 import pytest
 
 import myo_sim
+from myo_sim.build.leg_passive import load_passive_data
 from myo_sim.build.rigid_conversion import (
     actuator_lengths,
     load_leg_reference,
@@ -45,12 +47,14 @@ def test_adopted_maps_match_reference_fiber_length(leg):
     names = ref["adopted"]
     acts = [_act(model, n) for n in names]
     lengths = actuator_lengths(model, postures, acts)
+    shifts = {n: r["slack_shift_L0"] for n, r in load_passive_data().get("fit", {}).get("muscles", {}).items()}
     failures = {}
     for j, (name, a) in enumerate(zip(names, acts)):
         p = ref["muscles"][name]
         target = rigid_equivalent_fiber_length(
             lengths[:, j], p["optimal_fiber_length"], p["tendon_slack_length"], p["pennation_angle"]
         )
+        target = target - shifts.get(name, 0.0)  # passive calibration: tendon slack shifted by this many L0
         rmse = float(np.sqrt(np.mean((mujoco_fiber_length(model, a, lengths[:, j]) - target) ** 2)))
         if rmse > MAX_LN_RMSE:
             failures[name] = round(rmse, 3)
@@ -68,10 +72,10 @@ def test_adopted_maps_are_left_right_identical_and_inside_force_length_bounds(le
         assert lmin < r0 < 1.0 < r1 < lmax, (name, r0, r1, lmin, lmax)
 
 
-def test_semimem_standing_fiber_length_matches_reference(leg):
+def test_semimem_standing_fiber_length_near_reference(leg):
     model, ref, _ = leg
     data = mujoco.MjData(model)
     mujoco.mj_fwdPosition(model, data)  # qpos0: hip, knee and ankle at 0
     a = _act(model, "semimem_r")
     ln = float(mujoco_fiber_length(model, a, data.actuator_length[a]))
-    assert 0.7 < ln < 1.3, ln  # Rajagopal2016 (OpenSim, passive): 0.95
+    assert 0.6 < ln < 1.3, ln  # Rajagopal2016 (OpenSim, passive): 0.95; the passive calibration shifts it by <= 0.15
