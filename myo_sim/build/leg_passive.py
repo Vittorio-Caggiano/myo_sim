@@ -11,7 +11,7 @@ scales the passive force without changing the active force. Per muscle both are 
 - a one-sided loss: a moment beyond the measured total (which includes ligaments and other tissue), or opposite to it, costs
   ``EXCESS_WEIGHT`` times a deficit;
 - penalties on the slack shift (in units of L0) and on ``|ln(fpmax / reference)|``; the shift is bounded by ``MAX_SHIFT`` L0;
-- fascicle-length targets from ultrasound (``fascicle_targets``: Narici et al. 1996, medial gastrocnemius at rest), so the
+- fascicle-length targets from ultrasound (Narici et al. 1996, medial gastrocnemius at rest), so the
   slack lengths keep the measured operating lengths;
 - an active constraint: the active force-length factor at the angle of the group's maximal voluntary strength (Anderson,
   Madigan & Nussbaum 2007, J Biomech 40:3105-3113, doi:10.1016/j.jbiomech.2007.03.022, same test postures) stays at least
@@ -20,12 +20,15 @@ Passive moments are evaluated with MuJoCo's passive curve on precomputed path le
 joint-equality followers, e.g. knee translations and patella, resolved; they do not depend on the fitted parameters);
 ``tests/test_leg_passive.py`` checks them against ``mj_forward`` forces.
 
+Silder Table 4 lives in ``data/leg_passive.json``. Fit-time grids and the output stay in this module; ``--write``
+rewrites XML only.
+
 Usage::
 
-    uv run python -m myo_sim.build.leg_passive          # fit and print
-    uv run python -m myo_sim.build.leg_passive --write  # also rewrite range/lengthrange and fpmax (both sides)
+    uv run python scripts/fit_leg_passive.py          # fit and print
+    uv run python scripts/fit_leg_passive.py --write  # rewrite range/lengthrange and fpmax (both sides)
 
-Run after ``myo_sim.build.rigid_conversion --write``: the shift is applied on top of the converted maps.
+Run after ``scripts/fit_leg_rigid_maps.py --write``: the shift is applied on top of the converted maps.
 """
 
 from __future__ import annotations
@@ -50,6 +53,61 @@ FPMAX_PENALTY = 1.0  # N m per unit |ln(fpmax / reference)|
 MIN_FL = 0.5
 RANGE_MARGIN = 0.05  # keep the optimal length at least this far inside the shifted operating range
 JOINTS = ("hip_flexion_r", "knee_angle_r", "ankle_angle_r")
+# Fit-time configuration (not source data). Table 4 itself is in the JSON.
+GROUPS = {
+    "hamstrings": ["semimem", "semiten", "bflh"],
+    "knee_flexors_uni": ["bfsh"],
+    "rectus_femoris": ["recfem"],
+    "knee_extensors": ["vaslat", "vasmed", "vasint"],
+    "gastrocnemius": ["gasmed", "gaslat"],
+    "plantarflexors_uni": ["soleus", "tibpost", "fdl", "fhl", "perlong", "perbrev"],
+    "hip_flexors": ["iliacus", "psoas", "tfl", "sart"],
+    "hip_extensors": ["glmax1", "glmax2", "glmax3", "addmagDist", "addmagIsch", "addmagMid", "addmagProx"],
+}
+SILDER_POSTURES_DEG = {
+    "hip_knee_grid": {"hip": [-15, 0, 15, 30, 45, 60, 75, 85], "knee": [0, 10, 20, 35, 60, 90, 120], "ankle": -20},
+    "ankle_sweep": {"hip": 15, "knee": [0, 30, 60, 90, 120], "ankle": [-20, -10, 0, 10, 20]},
+}
+ANDERSON_STRENGTH = {
+    "hip_extension": {
+        "joint": "hip_flexion_r",
+        "posture_deg": {"knee_angle_r": 10},
+        "peak_deg": 53.4,
+        "muscles": ["glmax1", "glmax2", "glmax3", "addmagIsch", "semimem", "semiten", "bflh"],
+    },
+    "hip_flexion": {
+        "joint": "hip_flexion_r",
+        "posture_deg": {"knee_angle_r": 10},
+        "peak_deg": -12.3,
+        "muscles": ["iliacus", "psoas", "recfem", "tfl", "sart"],
+    },
+    "knee_extension": {
+        "joint": "knee_angle_r",
+        "posture_deg": {"hip_flexion_r": 70},
+        "peak_deg": 64.9,
+        "muscles": ["vaslat", "vasmed", "vasint", "recfem"],
+    },
+    "knee_flexion": {
+        "joint": "knee_angle_r",
+        "posture_deg": {"hip_flexion_r": 70},
+        "peak_deg": 29.9,
+        "muscles": ["semimem", "semiten", "bflh", "bfsh"],
+    },
+    "plantarflexion": {
+        "joint": "ankle_angle_r",
+        "posture_deg": {"hip_flexion_r": 80, "knee_angle_r": 50},
+        "peak_deg": 23.4,
+        "muscles": ["soleus"],
+    },
+}
+NARICI_FASCICLE = {
+    "weight_Nm_per_mm": 2.0,
+    "rows": [
+        {"muscle": "gasmed", "posture_deg": {"hip_flexion_r": 0, "knee_angle_r": 0, "ankle_angle_r": 0}, "mm": 57.0},
+        {"muscle": "gasmed", "posture_deg": {"hip_flexion_r": 0, "knee_angle_r": 0, "ankle_angle_r": -20}, "mm": 50.8},
+        {"muscle": "gasmed", "posture_deg": {"hip_flexion_r": 0, "knee_angle_r": 0, "ankle_angle_r": -40}, "mm": 41.7},
+    ],
+}
 
 
 def load_passive_data() -> dict:
@@ -104,9 +162,9 @@ def active_fl(ln: np.ndarray, lmin: np.ndarray, lmax: np.ndarray) -> np.ndarray:
     )
 
 
-def silder_postures(ref: dict) -> np.ndarray:
+def silder_postures() -> np.ndarray:
     """(hip, knee, ankle) in rad covering the trials of Silder et al. (2007, Table 2)."""
-    g, s = ref["postures_deg"]["hip_knee_grid"], ref["postures_deg"]["ankle_sweep"]
+    g, s = SILDER_POSTURES_DEG["hip_knee_grid"], SILDER_POSTURES_DEG["ankle_sweep"]
     out = [(h, k, g["ankle"]) for h in g["hip"] for k in g["knee"]]
     out += [(s["hip"], k, an) for k in s["knee"] for an in s["ankle"]]
     return np.radians(np.array(out, float))
@@ -162,9 +220,9 @@ def fit_leg_passive(model: mujoco.MjModel) -> dict:
     from scipy.optimize import least_squares
 
     ref = load_passive_data()
-    names = [n + "_r" for group in ref["groups"].values() for n in group]
+    names = [n + "_r" for group in GROUPS.values() for n in group]
     mus = LegMuscles(model, names)
-    ang = silder_postures(ref)
+    ang = silder_postures()
     target = silder_moments(ref["params"], ang[:, 0], ang[:, 1], ang[:, 2])
     ok = np.abs(target) < T_MAX
     lengths, arms = geometry(model, ang, mus.acts)
@@ -172,7 +230,7 @@ def fit_leg_passive(model: mujoco.MjModel) -> dict:
     fixed = model_passive(model, ang, exclude=mus.acts)
     # active constraint: each muscle at the angle of its group's maximal voluntary strength, in Anderson et al.'s posture
     s_post, s_owner = [], []
-    for t in ref["strength_postures"].values():
+    for t in ANDERSON_STRENGTH.values():
         q = np.radians([t["posture_deg"].get(j, 0.0) for j in JOINTS])
         q[JOINTS.index(t["joint"])] = np.radians(t["peak_deg"])
         for n in t["muscles"]:
@@ -183,7 +241,7 @@ def fit_leg_passive(model: mujoco.MjModel) -> dict:
     s_len, _ = geometry(model, np.array(s_post), mus.acts)
     m = len(names)
     # fascicle-length targets (ultrasound): fibre length ln * L0 at the given postures
-    ft = ref.get("fascicle_targets", {"rows": [], "weight_Nm_per_mm": 0.0})
+    ft = NARICI_FASCICLE
     f_idx = np.array([names.index(r["muscle"] + "_r") for r in ft["rows"]], int)
     f_mm = np.array([r["mm"] for r in ft["rows"]], float)
     f_len = (
@@ -293,9 +351,6 @@ def main() -> None:
     for n, r in result["muscles"].items():
         print(f"{n:14s} shift {r['slack_shift_L0']:+.3f} L0  fpmax {r['fpmax_before']:.3g} -> {r['fpmax']:.3g}")
     if args.write:
-        out = load_passive_data()
-        out["fit"] = result
-        DATA.write_text(json.dumps(out, indent=1) + "\n")
         print("rewrote", write_leg_passive(model, result), "actuators in", LEG_MUSCLE_XML)
 
 

@@ -2,6 +2,10 @@
 
 Append-only maintenance log, most recent first.
 
+## 2026-11-01 — Provenance JSON is cited tables only
+Changed: slimmed `build/data/*.json` to citation/DOI/licence plus table rows; moved fit grids out of JSON; dropped `scripts/debug_leg_physiology.py`; `--write` no longer dumps fit logs back into JSON
+Why: model policy (MyoHub/myo_sim#140): `build/data/<topic>.json` holds one row per element, not optimizer output, posture grids or analysis scripts.
+
 ## 2026-11-01 — Rigid-map follow-up follows model-policy provenance
 Changed: removed `tests/data/*.npz`; fit CLIs under `scripts/fit_*.py`; `LICENSE-*.txt` next to `build/data`; CHANGELOG; `docs/wiki/model-authoring.md`
 Why: model policy (MyoHub/myo_sim#140): raw datasets and papers are never committed; derived table values live in `build/data/<topic>.json` with citation, DOI and licence; fit scripts are `scripts/fit_*.py` and run only at development time.

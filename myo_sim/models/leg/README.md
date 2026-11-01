@@ -33,18 +33,7 @@ Passive force is calibrated to measured passive joint moments (`scripts/fit_leg_
 (20 young adults), with the medial gastrocnemius kept at the ultrasound fascicle lengths of
 [Narici et al. 1996](https://doi.org/10.1113/jphysiol.1996.sp021685) and each muscle at least half its active force at the
 angle of maximal voluntary strength of [Anderson et al. 2007](https://doi.org/10.1016/j.jbiomech.2007.03.022)
-(`tests/test_leg_passive.py`). RMS error against Silder et al.: hip 19.8 -> 11.0 N m, knee 11.2 -> 8.4 N m, ankle
-2.6 -> 2.1 N m.
-
-Comparison with human experimental data (`scripts/debug_leg_physiology.py`; torques use effective moment arms about the
-anatomical coordinate, including the knee's equality-coupled translations):
-
-| Measure | Human | This model |
-|---|---|---|
-| Optimal fibre length, 35 muscle parts within 1 SD of cadaver data ([Ward et al. 2009](https://doi.org/10.1007/s11999-008-0594-8)) | — | 30 / 35 (mean error 11.6 %) |
-| Medial gastrocnemius fascicle at rest, knee extended, ankle 0 / 20 / 40 deg plantarflexion ([Narici et al. 1996](https://doi.org/10.1113/jphysiol.1996.sp021685)) | 57 / 49 / 42 mm | 65 / 50 / 35 mm |
-| Passive knee moment, hip flexed 70 deg, knee extended ([Anderson et al. 2007](https://doi.org/10.1016/j.jbiomech.2007.03.022); [Silder et al. 2007](https://doi.org/10.1016/j.jbiomech.2006.12.017) mean model) | 6 Nm; 30 Nm | 19 Nm |
-| Peak maximal isometric torque, model / human, hip and knee flexion and extension, plantar- and dorsiflexion ([Anderson et al. 2007](https://doi.org/10.1016/j.jbiomech.2007.03.022), young males) | 1 | 1.4–3.7 |
+(`tests/test_leg_passive.py`). RMS error against Silder et al.: hip 11.0 N m, knee 8.4 N m, ankle 2.1 N m.
 
 ## Known limitations
 

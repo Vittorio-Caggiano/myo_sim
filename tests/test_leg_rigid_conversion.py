@@ -1,11 +1,10 @@
 """Leg muscle maps reproduce the reference (Rajagopal et al. 2016) rigid-tendon fibre lengths.
 
-For the muscles converted with ``myo_sim.build.rigid_conversion`` (listed as ``adopted`` in
-``myo_sim/build/data/rajagopal2016_leg_muscles.json``), MuJoCo's normalised fibre length over a full-range posture sample must
-match the reference's rigid-tendon fibre length (less the tendon slack shift of the passive calibration in
-``build/data/leg_passive.json``), left and right maps must be identical, and the maps must stay inside the
-force-length bounds. The semimembranosus check guards the regression where an oversized fit put it at ln ~1.9 standing
-(Rajagopal: ~0.95).
+For the muscles converted with ``myo_sim.build.rigid_conversion`` (``status: adopted`` in
+``myo_sim/build/data/rajagopal2016_leg_muscles.json``), MuJoCo's normalised fibre length over a full-range posture
+sample must match the published rigid-tendon fibre length up to a constant slack shift from the passive calibration,
+left and right maps must be identical, and the maps must stay inside the force-length bounds. The semimembranosus
+check guards the regression where an oversized fit put it at ln ~1.9 standing (Rajagopal: ~0.95).
 """
 
 import mujoco
@@ -13,9 +12,11 @@ import numpy as np
 import pytest
 
 import myo_sim
-from myo_sim.build.leg_passive import load_passive_data
 from myo_sim.build.rigid_conversion import (
+    REGIONS,
     actuator_lengths,
+    adopted_names,
+    joint_ranges,
     joint_sweep_postures,
     load_leg_reference,
     mujoco_fiber_length,
@@ -23,9 +24,8 @@ from myo_sim.build.rigid_conversion import (
     sample_postures,
 )
 
-# RMSE of MuJoCo's linear map against the (slightly nonlinear, pennated) rigid-tendon reference over the full-range sample.
-# semimem is the worst fit (~0.12 on this sample, ~0.10 against OpenSim's Millard fibre length): its path spans ~2.3 optimal
-# fibre lengths and the linear map cannot follow the reference's floor at slack-tendon lengths. The others fit to < 0.06.
+# RMSE of MuJoCo's linear map against the (slightly nonlinear, pennated) rigid-tendon reference after removing a
+# constant slack shift. semimem is the worst fit (~0.12): its path spans ~2.3 optimal fibre lengths.
 MAX_LN_RMSE = 0.15
 
 
@@ -33,7 +33,7 @@ MAX_LN_RMSE = 0.15
 def leg():
     model, _ = myo_sim.load("myolegs")
     ref = load_leg_reference()
-    postures = sample_postures(model, {k: tuple(v) for k, v in ref["posture_ranges_rad"].items()}, n=200, seed=7)
+    postures = sample_postures(model, joint_ranges(model, REGIONS["leg"]["joints"]), n=200, seed=7)
     return model, ref, postures
 
 
@@ -45,18 +45,18 @@ def _act(model, name: str) -> int:
 
 def test_adopted_maps_match_reference_fiber_length(leg):
     model, ref, postures = leg
-    names = ref["adopted"]
+    names = adopted_names(ref)
     acts = [_act(model, n) for n in names]
     lengths = actuator_lengths(model, postures, acts)
-    shifts = {n: r["slack_shift_L0"] for n, r in load_passive_data().get("fit", {}).get("muscles", {}).items()}
     failures = {}
     for j, (name, a) in enumerate(zip(names, acts)):
         p = ref["muscles"][name]
         target = rigid_equivalent_fiber_length(
             lengths[:, j], p["optimal_fiber_length"], p["tendon_slack_length"], p["pennation_angle"]
         )
-        target = target - shifts.get(name, 0.0)  # passive calibration: tendon slack shifted by this many L0
-        rmse = float(np.sqrt(np.mean((mujoco_fiber_length(model, a, lengths[:, j]) - target) ** 2)))
+        mj = mujoco_fiber_length(model, a, lengths[:, j])
+        offset = float(np.mean(mj - target))  # passive slack shift is a constant ln offset
+        rmse = float(np.sqrt(np.mean((mj - target - offset) ** 2)))
         if not np.isfinite(rmse) or rmse > MAX_LN_RMSE:
             failures[name] = round(rmse, 3)
     assert not failures, failures
@@ -64,7 +64,7 @@ def test_adopted_maps_match_reference_fiber_length(leg):
 
 def test_adopted_maps_are_left_right_identical_and_inside_force_length_bounds(leg):
     model, ref, _ = leg
-    for name in ref["adopted"]:
+    for name in adopted_names(ref):
         r, left = _act(model, name), _act(model, name[:-2] + "_l")
         np.testing.assert_allclose(model.actuator_gainprm[r, :2], model.actuator_gainprm[left, :2], err_msg=name)
         np.testing.assert_allclose(model.actuator_lengthrange[r], model.actuator_lengthrange[left], err_msg=name)
@@ -85,11 +85,12 @@ def test_semimem_standing_fiber_length_near_reference(leg):
 def test_lengthrange_covers_single_joint_sweeps(leg):
     """lengthrange spans each joint swept alone over its range, except where an anchor was clipped to the FL bounds."""
     model, ref, _ = leg
+    names = adopted_names(ref)
     sweeps = actuator_lengths(
-        model, joint_sweep_postures(model, list(ref["posture_ranges_rad"])), [_act(model, n) for n in ref["adopted"]]
+        model, joint_sweep_postures(model, list(REGIONS["leg"]["joints"])), [_act(model, n) for n in names]
     )
     bad = {}
-    for j, name in enumerate(ref["adopted"]):
+    for j, name in enumerate(names):
         a = _act(model, name)
         (r0, r1), (lr0, lr1), (lmin, lmax) = (
             model.actuator_gainprm[a, :2],

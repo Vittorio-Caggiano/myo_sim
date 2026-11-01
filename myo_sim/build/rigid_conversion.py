@@ -28,19 +28,58 @@ import numpy as np
 DATA = Path(__file__).parent / "data" / "rajagopal2016_leg_muscles.json"
 LEG_MUSCLE_XML = Path(__file__).parents[1] / "models" / "leg" / "assets" / "myolegs_muscle.xml"
 MODELS = Path(__file__).parents[1] / "models"
-REGIONS = {  # reference data, the model to fit on, the muscle XML, and how the other side is derived
-    "leg": {"data": DATA, "model": "myolegs", "xml": LEG_MUSCLE_XML, "mirror": ("_r", "_l")},
+REGIONS = {  # cited table JSON, model, muscle XML, joints to sweep, and how the other side is derived
+    "leg": {
+        "data": DATA,
+        "model": "myolegs",
+        "xml": LEG_MUSCLE_XML,
+        "mirror": ("_r", "_l"),
+        "joints": (
+            "hip_flexion_r",
+            "hip_adduction_r",
+            "hip_rotation_r",
+            "knee_angle_r",
+            "ankle_angle_r",
+            "subtalar_angle_r",
+            "mtp_angle_r",
+        ),
+    },
     "arm": {
         "data": Path(__file__).parent / "data" / "mobl_arm_muscles.json",
         "model": "myoarm",
         "xml": MODELS / "arm" / "assets" / "myoarm_r_muscle.xml",
         "mirror": None,
+        "joints": (
+            "elv_angle_r",
+            "shoulder_elv_r",
+            "shoulder_rot_r",
+            "elbow_flexion_r",
+            "pro_sup_r",
+            "deviation_r",
+            "flexion_r",
+        ),
     },  # left arm mirrored at compose time
 }
 
 
 def load_leg_reference() -> dict:
     return json.loads(DATA.read_text())
+
+
+def adopted_names(ref: dict) -> list[str]:
+    """Muscles whose published table values were written into the XML."""
+    return [name for name, row in ref["muscles"].items() if row.get("status") == "adopted"]
+
+
+def joint_ranges(model: mujoco.MjModel, names: tuple[str, ...]) -> dict[str, tuple[float, float]]:
+    """Named joints' model ranges. Fit samples the model, not a stored grid."""
+    out: dict[str, tuple[float, float]] = {}
+    for name in names:
+        jid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, name)
+        if jid < 0:
+            raise KeyError(name)
+        out[name] = (float(model.jnt_range[jid, 0]), float(model.jnt_range[jid, 1]))
+    return out
 
 
 def rigid_equivalent_fiber_length(path_length: np.ndarray, l0: float, lts: float, alpha0: float) -> np.ndarray:
@@ -149,26 +188,7 @@ def mujoco_fiber_length(model: mujoco.MjModel, actuator: int, length: np.ndarray
 
 def leg_rigid_maps(model: mujoco.MjModel, n: int = 400, seed: int = 123) -> dict[str, tuple[float, float, float, float]]:
     """Fitted maps for the adopted right-leg muscles (apply to both sides; the leg is left/right symmetric)."""
-    ref = load_leg_reference()
-    postures = sample_postures(model, {k: tuple(v) for k, v in ref["posture_ranges_rad"].items()}, n, seed)
-    names = ref["adopted"]
-    acts = [mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, name) for name in names]
-    lengths = actuator_lengths(model, postures, acts)
-    sweeps = actuator_lengths(model, joint_sweep_postures(model, list(ref["posture_ranges_rad"])), acts)
-    maps = {}
-    for j, (name, a) in enumerate(zip(names, acts)):
-        p = ref["muscles"][name]
-        lmin, lmax = (float(v) for v in model.actuator_gainprm[a, 4:6])
-        maps[name] = fit_rigid_muscle_map(
-            lengths[:, j],
-            p["optimal_fiber_length"],
-            p["tendon_slack_length"],
-            p["pennation_angle"],
-            lmin,
-            lmax,
-            span_length=sweeps[:, j],
-        )
-    return maps
+    return region_rigid_maps(model, "leg", n=n, seed=seed)
 
 
 def region_rigid_maps(
@@ -176,9 +196,9 @@ def region_rigid_maps(
 ) -> dict[str, tuple[float, float, float, float]]:
     """Fitted maps for a region's adopted muscles (``REGIONS``): random full-range postures plus single-joint sweeps."""
     ref = json.loads(REGIONS[region]["data"].read_text())
-    ranges = {k: tuple(v) for k, v in ref["posture_ranges_rad"].items()}
+    ranges = joint_ranges(model, REGIONS[region]["joints"])
     postures = sample_postures(model, ranges, n, seed)
-    names = ref["adopted"]
+    names = adopted_names(ref)
     acts = [mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, name) for name in names]
     lengths = actuator_lengths(model, postures, acts)
     sweeps = actuator_lengths(model, joint_sweep_postures(model, list(ranges)), acts)

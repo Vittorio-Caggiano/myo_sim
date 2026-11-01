@@ -93,13 +93,13 @@ uv run python scripts/fit_leg_rigid_maps.py --write
 uv run python scripts/fit_leg_passive.py --write
 uv run python scripts/fit_arm_rigid_maps.py --write
 uv run pytest tests/test_leg_rigid_conversion.py tests/test_leg_passive.py tests/test_arm_rigid_conversion.py
-uv run python scripts/debug_leg_physiology.py
 ```
 
-JSON is fit input only; `load()` does not read it. Adopt a muscle when fibre-length RMSE vs the published
-rigid-tendon length falls and isometric force RMSE does not rise by more than 2 % of \(F_0\). `recfem`,
-`vaslat` and `glmax3` stay on the previous maps for that reason (recorded in the data file). Licence
-notices sit next to the JSON (`LICENSE-RAJAGOPAL.txt`, `LICENSE-MOBL-ARMS.txt`, `LICENSE-SILDER.txt`).
+JSON holds cited table values only (citation, DOI, licence, SI units, one row per muscle or Table-4
+element). Fit grids and optimizer output stay in the fit scripts; `load()` does not read the JSON.
+Adopt a muscle when fibre-length RMSE vs the published rigid-tendon length falls and isometric force
+RMSE does not rise by more than 2 % of \(F_0\). `recfem`, `vaslat` and `glmax3` stay on the previous
+maps (`status: kept`). Licence notices sit next to the JSON.
 
 ---
 

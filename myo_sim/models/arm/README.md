@@ -21,10 +21,8 @@ MyoArm is a MuJoCo musculoskeletal model of the right upper extremity — should
 <!-- TODO: review (quantitative fidelity claims; reproduce with the commands below) -->
 Ten arm muscles use maps converted directly from MoBL-ARMS
 ([Holzbaur et al. 2005](https://doi.org/10.1007/s10439-005-3320-7);
-`scripts/fit_arm_rigid_maps.py`, list and selection in `myo_sim/build/data/mobl_arm_muscles.json`).
-The regression test (`tests/test_arm_rigid_conversion.py`) checks the published rigid-tendon fibre length, not a
-stored motion-capture trajectory. The adopt decision used the Seth et al. 2019 shoulder motions; those recordings
-are not in this repository.
+`scripts/fit_arm_rigid_maps.py`, `status: adopted` in `myo_sim/build/data/mobl_arm_muscles.json`).
+The regression test (`tests/test_arm_rigid_conversion.py`) checks the published rigid-tendon fibre length.
 
 
 ![DELT1 left/right shoulder elevation relationship](../../../docs/images/DELT1_DELT1_l_shoulder_elv_r.png)

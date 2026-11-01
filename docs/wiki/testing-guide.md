@@ -57,7 +57,6 @@ These scripts produce diagnostic plots and are not collected by pytest. Run them
 cd tests && uv run python debug_muscle_leg.py
 cd tests && uv run python debug_muscle_torso.py
 cd tests && uv run python debug_muscle_bimanual.py
-uv run python scripts/debug_leg_physiology.py       # myolegs vs human experimental data (strength, fibre length, passive)
 ```
 
 Output goes to `tests/output/muscle_analysis/`. The scripts use helpers from `muscle_analysis_utils.py`:

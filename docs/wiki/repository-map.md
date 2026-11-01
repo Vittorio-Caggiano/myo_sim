@@ -22,11 +22,10 @@ myo_sim/              # installable Python package
     utils.py          # MirrorRules, mirror_element(), add_contact_pairs(), XML composition helpers
     hand.py           # prune_arm_spec_to_hand()
     rigid_conversion.py  # library for scripts/fit_{leg,arm}_rigid_maps.py (not used at load time)
-    data/                # provenance JSON + LICENSE-*.txt; no raw datasets
+    data/                # cited table JSON + LICENSE-*.txt; no fit logs or trajectories
     leg_passive.py       # library for scripts/fit_leg_passive.py
 scripts/
   fit_leg_rigid_maps.py / fit_arm_rigid_maps.py / fit_leg_passive.py
-  debug_leg_physiology.py
 tests/
   test_sims.py                     # smoke: loads static XML models
   test_build_registry.py           # BuildStrategy enum, MODEL_REGISTRY completeness

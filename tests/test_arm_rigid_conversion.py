@@ -1,8 +1,7 @@
 """Arm muscle maps converted from MoBL-ARMS (myo_sim/build/rigid_conversion.py, region "arm").
 
 Adopted maps match the MoBL-ARMS rigid-tendon fibre length over the full-range sample and stay inside the
-force-length bounds. Motion-capture trajectories are not stored in the repository; the adopt decision is
-recorded in ``build/data/mobl_arm_muscles.json``.
+force-length bounds. The adopt list is the ``status: adopted`` rows in ``build/data/mobl_arm_muscles.json``.
 """
 
 import json
@@ -15,6 +14,8 @@ import myo_sim
 from myo_sim.build.rigid_conversion import (
     REGIONS,
     actuator_lengths,
+    adopted_names,
+    joint_ranges,
     mujoco_fiber_length,
     rigid_equivalent_fiber_length,
     sample_postures,
@@ -36,11 +37,12 @@ def _act(model, name: str) -> int:
 
 def test_adopted_maps_match_mobl_and_bounds(arm):
     model, ref = arm
-    postures = sample_postures(model, {k: tuple(v) for k, v in ref["posture_ranges_rad"].items()}, n=200, seed=7)
-    acts = [_act(model, n) for n in ref["adopted"]]
+    postures = sample_postures(model, joint_ranges(model, REGIONS["arm"]["joints"]), n=200, seed=7)
+    names = adopted_names(ref)
+    acts = [_act(model, n) for n in names]
     lengths = actuator_lengths(model, postures, acts)
     bad = {}
-    for j, (name, a) in enumerate(zip(ref["adopted"], acts)):
+    for j, (name, a) in enumerate(zip(names, acts)):
         p = ref["muscles"][name]
         target = rigid_equivalent_fiber_length(
             lengths[:, j], p["optimal_fiber_length"], p["tendon_slack_length"], p["pennation_angle"]
