@@ -1,0 +1,4 @@
+leg_passive.json holds the mean exponential gains and offsets of Table 4 in
+Silder et al. 2007 (J Biomech 40:2628-2635, doi:10.1016/j.jbiomech.2006.12.017),
+transcribed from the paper. Subject-level recordings are not included.
+Cite the paper; do not treat this file as a substitute for the article.

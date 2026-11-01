@@ -24,12 +24,11 @@ Example fidelity check (glmax1 left/right moment-arm and force-length plot) for 
 
 <!-- TODO: review (quantitative fidelity claims; reproduce with the commands below) -->
 Muscle fibre lengths follow the reference model: for the 24 muscles converted directly from Rajagopal et al. (2016)
-(`myo_sim/build/rigid_conversion.py`; list in `myo_sim/build/data/rajagopal2016_leg_muscles.json`), MuJoCo's normalised fibre
-length matches OpenSim's own (Millard, passive) fibre length over 400 full-range postures with a median RMSE of 0.02 (max 0.10,
-peroneus brevis), less the slack shifts of the passive calibration (`tests/test_leg_rigid_conversion.py`, with the packaged
-OpenSim sample `tests/data/rajagopal2016_leg_opensim.npz`).
+(`scripts/fit_leg_rigid_maps.py`; list in `myo_sim/build/data/rajagopal2016_leg_muscles.json`), MuJoCo's normalised fibre
+length matches the published rigid-tendon fibre length over the full joint range (`tests/test_leg_rigid_conversion.py`).
+The OpenSim model is not stored here.
 
-Passive force is calibrated to measured passive joint moments (`myo_sim/build/leg_passive.py`): tendon slack length and
+Passive force is calibrated to measured passive joint moments (`scripts/fit_leg_passive.py`): tendon slack length and
 `fpmax` per muscle fitted to the multi-joint passive moments of [Silder et al. 2007](https://doi.org/10.1016/j.jbiomech.2006.12.017)
 (20 young adults), with the medial gastrocnemius kept at the ultrasound fascicle lengths of
 [Narici et al. 1996](https://doi.org/10.1113/jphysiol.1996.sp021685) and each muscle at least half its active force at the
@@ -37,7 +36,7 @@ angle of maximal voluntary strength of [Anderson et al. 2007](https://doi.org/10
 (`tests/test_leg_passive.py`). RMS error against Silder et al.: hip 19.8 -> 11.0 N m, knee 11.2 -> 8.4 N m, ankle
 2.6 -> 2.1 N m.
 
-Comparison with human experimental data (`tests/debug_leg_physiology.py`; torques use effective moment arms about the
+Comparison with human experimental data (`scripts/debug_leg_physiology.py`; torques use effective moment arms about the
 anatomical coordinate, including the knee's equality-coupled translations):
 
 | Measure | Human | This model |

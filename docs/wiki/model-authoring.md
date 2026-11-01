@@ -78,33 +78,28 @@ uv run pytest tests/test_leg_muscle_symmetry.py
 
 ---
 
-## Setting rigid-tendon muscle parameters from the reference model
+## Method: rigid-tendon maps from a published OpenSim muscle
 
-MuJoCo's muscle maps the actuator length linearly to a normalised fibre length,
-`ln = range0 + (L - lengthrange0) * (range1 - range0) / (lengthrange1 - lengthrange0)`, with a rigid tendon and no pennation.
-To make a converted muscle operate at the reference model's fibre lengths, derive the map from the reference muscle's optimal
-fibre length `l0`, tendon slack length `lts` and pennation `alpha0` (rigid-tendon fibre length
-`sqrt(max(L - lts, 0)^2 + (l0 sin alpha0)^2) / l0`), fitted over the path lengths of a posture sample covering the full joint range.
-Do not fit `l0` to a measured `lengthrange` from a restricted (e.g. gait) posture set: MuJoCo extrapolates the map outside it,
-and a long-tendon muscle can then reach unphysiological fibre lengths (semimembranosus reached ln ~2.9 with the hip flexed).
+This is the identification method for a muscle-parameter refit (see *Provenance*: cited table values in
+`myo_sim/build/data/<topic>.json`, fit scripts under `scripts/fit_*.py`, output committed in `*_muscle.xml`).
+The raw OpenSim model and any motion-capture or simulator trajectories stay out of the repository.
 
-`myo_sim/build/rigid_conversion.py` does this for the legs from the packaged Rajagopal et al. (2016) values
-(`myo_sim/build/data/rajagopal2016_leg_muscles.json`, which also records which muscles use it and why):
+MuJoCo maps path length \(L\) linearly to normalised fibre length. Fit that line to the published rigid-tendon
+fibre length \(\sqrt{\max(L-l_{ts},0)^2+(l_0\sin\alpha_0)^2}/l_0\) over the **full joint range**, not a gait
+sample — MuJoCo extrapolates outside `lengthrange`, which is how semimembranosus reached \(\ell_n\sim 2.9\).
 
 ```bash
-uv run python -m myo_sim.build.rigid_conversion          # print the fitted maps
-uv run python -m myo_sim.build.rigid_conversion --write  # rewrite range and lengthrange in myolegs_muscle.xml
-uv run pytest tests/test_leg_rigid_conversion.py
-cd tests && uv run python debug_leg_physiology.py        # compare with human experimental data
-uv run python -m myo_sim.build.leg_passive --write       # then refit passive force to measured passive moments
+uv run python scripts/fit_leg_rigid_maps.py --write
+uv run python scripts/fit_leg_passive.py --write
+uv run python scripts/fit_arm_rigid_maps.py --write
+uv run pytest tests/test_leg_rigid_conversion.py tests/test_leg_passive.py tests/test_arm_rigid_conversion.py
+uv run python scripts/debug_leg_physiology.py
 ```
 
-MuJoCo's rigid tendons cannot reproduce fascicle-tendon decoupling (e.g. in vivo gastrocnemius fascicles change length about
-half as much as the muscle-tendon unit); compliant-tendon models are needed for that.
-
-A rigid tendon cannot reproduce the reference's elastic-tendon forces exactly. Keep the previous map where the direct one
-increases the isometric force error against the reference by more than 2 % of Fmax (e.g. rectus femoris, vastus lateralis, gluteus maximus 3); the
-selection rule and the muscles kept are recorded in the data file.
+JSON is fit input only; `load()` does not read it. Adopt a muscle when fibre-length RMSE vs the published
+rigid-tendon length falls and isometric force RMSE does not rise by more than 2 % of \(F_0\). `recfem`,
+`vaslat` and `glmax3` stay on the previous maps for that reason (recorded in the data file). Licence
+notices sit next to the JSON (`LICENSE-RAJAGOPAL.txt`, `LICENSE-MOBL-ARMS.txt`, `LICENSE-SILDER.txt`).
 
 ---
 

@@ -9,9 +9,10 @@ measured length range.
 
 Reference values for the legs (Rajagopal et al. 2016) are packaged in ``data/rajagopal2016_leg_muscles.json``.
 
-Usage (rewrites ``range`` and ``lengthrange`` of the adopted leg muscles, both sides, in ``myolegs_muscle.xml``)::
+Usage (development / release only; rewrites adopted ``range`` and ``lengthrange``)::
 
-    uv run python -m myo_sim.build.rigid_conversion --write
+    uv run python scripts/fit_leg_rigid_maps.py --write
+    uv run python scripts/fit_arm_rigid_maps.py --write
 """
 
 from __future__ import annotations

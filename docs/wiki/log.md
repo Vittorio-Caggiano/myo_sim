@@ -2,6 +2,10 @@
 
 Append-only maintenance log, most recent first.
 
+## 2026-11-01 — Rigid-map follow-up follows model-policy provenance
+Changed: removed `tests/data/*.npz`; fit CLIs under `scripts/fit_*.py`; `LICENSE-*.txt` next to `build/data`; CHANGELOG; `docs/wiki/model-authoring.md`
+Why: model policy (MyoHub/myo_sim#140): raw datasets and papers are never committed; derived table values live in `build/data/<topic>.json` with citation, DOI and licence; fit scripts are `scripts/fit_*.py` and run only at development time.
+
 ## 2026-10-31 — Arm rigid-tendon maps from MoBL-ARMS, checked along measured shoulder motion
 Changed: `myo_sim/models/arm/assets/myoarm_r_muscle.xml`, `myo_sim/build/rigid_conversion.py` (regions), `myo_sim/build/data/mobl_arm_muscles.json`, `tests/test_arm_rigid_conversion.py`, `tests/data/seth2019_shoulder_motion.npz`, `myo_sim/models/arm/README.md`
 Why: Along the measured shoulder motions of Seth et al. (2019), LAT1, LAT3 and PECM3 operated outside 0.5-1.5 L0 in 100 %, 64 % and 56 % of frames. Ten muscles now use maps converted directly from MoBL-ARMS (0-5 % of frames outside, closer to the Seth model's fibre lengths); the selection rules are recorded in the data file.

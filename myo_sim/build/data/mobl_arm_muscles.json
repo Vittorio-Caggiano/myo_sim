@@ -1,5 +1,10 @@
 {
- "source": "MOBL_ARMS_41.osim (MoBL-ARMS upper limb model; Holzbaur et al. 2005 Ann Biomed Eng 33:829-840, doi:10.1007/s10439-005-3320-7; Saul et al. 2015 Comput Methods Biomech Biomed Engin 18:1445-1458, doi:10.1080/10255842.2014.916698), copy from github.com/CEINMS-RT/UpperLimbModel (BSD-3), read with OpenSim 4.6",
+ "source": "MOBL_ARMS_41.osim (MoBL-ARMS). The .osim and motion-capture trajectories are not in this repository.",
+ "reference": "Holzbaur et al. 2005 Ann Biomed Eng 33:829-840; Saul et al. 2015 Comput Methods Biomech Biomed Engin 18:1445-1458",
+ "doi": "10.1007/s10439-005-3320-7; 10.1080/10255842.2014.916698",
+ "licence": "LICENSE-MOBL-ARMS.txt",
+ "units": "optimal_fiber_length m, tendon_slack_length m, pennation_angle rad, max_isometric_force N",
+ "status": "transferred from the published model; adopted muscles listed below, others kept (see selection)",
  "posture_ranges_rad": {
   "elv_angle_r": [
    -1.5707963267948966,

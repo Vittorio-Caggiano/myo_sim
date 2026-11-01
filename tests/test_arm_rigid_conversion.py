@@ -1,12 +1,11 @@
 """Arm muscle maps converted from MoBL-ARMS (myo_sim/build/rigid_conversion.py, region "arm").
 
-Adopted maps match the MoBL-ARMS rigid-tendon fibre length over the full-range sample, stay inside the force-length bounds,
-and, for the shoulder muscles the Seth et al. (2019) thoracoscapular model tracks, keep their fibre lengths along that study's
-measured shoulder motions close to the Seth model's (tests/data/seth2019_shoulder_motion.npz) and inside 0.5-1.5.
+Adopted maps match the MoBL-ARMS rigid-tendon fibre length over the full-range sample and stay inside the
+force-length bounds. Motion-capture trajectories are not stored in the repository; the adopt decision is
+recorded in ``build/data/mobl_arm_muscles.json``.
 """
 
 import json
-from pathlib import Path
 
 import mujoco
 import numpy as np
@@ -20,8 +19,6 @@ from myo_sim.build.rigid_conversion import (
     rigid_equivalent_fiber_length,
     sample_postures,
 )
-
-SETH = Path(__file__).parent / "data" / "seth2019_shoulder_motion.npz"
 
 
 @pytest.fixture(scope="module")
@@ -53,24 +50,3 @@ def test_adopted_maps_match_mobl_and_bounds(arm):
         if not np.isfinite(rmse) or rmse > 0.15 or not (lmin < r0 < r1 < lmax):
             bad[name] = (round(rmse, 3), float(r0), float(r1), float(lmin), float(lmax))
     assert not bad, bad
-
-
-def test_shoulder_fiber_length_along_measured_motion(arm):
-    model, _ = arm
-    z = np.load(SETH)
-    cm = {"plane_elv": "elv_angle_r", "shoulder_elv": "shoulder_elv_r", "axial_rot": "shoulder_rot_r",
-          "elbow_flexion": "elbow_flexion_r", "pro_sup": "pro_sup_r"}  # fmt: skip
-    coords = [str(c) for c in z["coords"]]
-    postures = np.stack(
-        [
-            sample_postures(model, {cm[c]: (np.radians(v), np.radians(v)) for c, v in zip(coords, row)}, 1, 0)[0]
-            for row in z["angles_deg"]
-        ]
-    )
-    names = [str(n) for n in z["muscles"]]
-    lengths = actuator_lengths(model, postures, [_act(model, n) for n in names])
-    for j, name in enumerate(names):
-        ln = mujoco_fiber_length(model, _act(model, name), lengths[:, j])
-        rmse = float(np.sqrt(np.mean((ln - z["seth_ln"][:, j]) ** 2)))
-        assert rmse <= float(z["recorded_rmse"][j]) + 0.01, (name, rmse)
-        assert np.mean((ln < 0.5) | (ln > 1.5)) <= 0.06, name

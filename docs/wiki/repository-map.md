@@ -21,11 +21,12 @@ myo_sim/              # installable Python package
     compose.py        # MODEL_REGISTRY, BuildStrategy, build_spec()/build_model(), SPEC_BUILDERS
     utils.py          # MirrorRules, mirror_element(), add_contact_pairs(), XML composition helpers
     hand.py           # prune_arm_spec_to_hand()
-    rigid_conversion.py  # rigid-tendon muscle maps from reference l0/lts/pennation (legs: Rajagopal 2016; arm: MoBL-ARMS)
-    data/mobl_arm_muscles.json  # MoBL-ARMS parameters, converted arm muscles and the selection rules
-    data/rajagopal2016_leg_muscles.json  # reference muscle parameters and the converted-muscle list
-    leg_passive.py       # leg tendon slack / fpmax fitted to measured passive moments (Silder 2007)
-    data/leg_passive.json  # passive source curves, citations and the recorded fit
+    rigid_conversion.py  # library for scripts/fit_{leg,arm}_rigid_maps.py (not used at load time)
+    data/                # provenance JSON + LICENSE-*.txt; no raw datasets
+    leg_passive.py       # library for scripts/fit_leg_passive.py
+scripts/
+  fit_leg_rigid_maps.py / fit_arm_rigid_maps.py / fit_leg_passive.py
+  debug_leg_physiology.py
 tests/
   test_sims.py                     # smoke: loads static XML models
   test_build_registry.py           # BuildStrategy enum, MODEL_REGISTRY completeness
@@ -33,7 +34,8 @@ tests/
   test_mirror_symmetry.py          # body positions and axes are bilateral reflections
   test_chest_ownership.py          # chest_r in torso chain, not arm chain
   test_leg_muscle_symmetry.py      # leg moment arms symmetric L/R
-  test_leg_rigid_conversion.py     # leg muscle maps vs Rajagopal rigid-tendon and OpenSim fibre lengths
+  test_leg_rigid_conversion.py     # adopted leg maps vs published rigid-tendon fibre lengths
+  test_arm_rigid_conversion.py     # adopted arm maps vs published MoBL-ARMS rigid-tendon fibre lengths
   test_leg_passive.py              # leg passive moments vs the recorded fit to Silder et al. 2007
   test_torso_muscle_symmetry.py    # torso moment arms symmetric L/R
   test_fragment_registry.py        # no stale static FragmentRegistry aliases
@@ -42,7 +44,6 @@ tests/
   test_bimanual_muscle_symmetry.py # manual only
   muscle_analysis_utils.py / muscle_symmetry_checks.py
   debug_muscle_leg.py / debug_muscle_torso.py / debug_muscle_bimanual.py
-  debug_leg_physiology.py          # myolegs vs human dynamometry, cadaver fibre lengths, ultrasound
 docs/wiki/            # canonical wiki location
 ```
 
@@ -50,7 +51,7 @@ docs/wiki/            # canonical wiki location
 
 | Task | Location |
 |---|---|
-| Set rigid muscle parameters from the reference model | `myo_sim/build/rigid_conversion.py` (see `model-authoring.md`) |
+| Set rigid muscle parameters from the reference model | `scripts/fit_leg_rigid_maps.py` / `scripts/fit_arm_rigid_maps.py` (provenance in `build/data/`) |
 | Edit a muscle path or via-point | `myo_sim/models/<part>/assets/*_muscle.xml` and `*_tendon.xml` |
 | Edit skeleton geometry | `myo_sim/models/<part>/assets/*_chain.xml` |
 | Add a composed model | `myo_sim/build/compose.py` — new `BuildStrategy`, builder, `SPEC_BUILDERS` and `MODEL_REGISTRY` entries |

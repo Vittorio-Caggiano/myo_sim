@@ -8,8 +8,6 @@ force-length bounds. The semimembranosus check guards the regression where an ov
 (Rajagopal: ~0.95).
 """
 
-from pathlib import Path
-
 import mujoco
 import numpy as np
 import pytest
@@ -82,30 +80,6 @@ def test_semimem_standing_fiber_length_near_reference(leg):
     a = _act(model, "semimem_r")
     ln = float(mujoco_fiber_length(model, a, data.actuator_length[a]))
     assert 0.6 < ln < 1.3, ln  # Rajagopal2016 (OpenSim, passive): 0.95; the passive calibration shifts it by <= 0.15
-
-
-OPENSIM = Path(__file__).parent / "data" / "rajagopal2016_leg_opensim.npz"
-
-
-def test_adopted_maps_match_opensim_fiber_length(leg):
-    """MuJoCo's map against OpenSim's own (Millard, passive) fibre length at the packaged postures (myolegs_osim_ref)."""
-    model, ref, _ = leg
-    z = np.load(OPENSIM)
-    coords = [str(c) for c in z["coords"]]
-    postures = np.stack(
-        [sample_postures(model, {c: (float(v), float(v)) for c, v in zip(coords, row)}, 1, 0)[0] for row in z["postures"]]
-    )
-    names = [str(n) for n in z["names"]]
-    shifts = {n: r["slack_shift_L0"] for n, r in load_passive_data().get("fit", {}).get("muscles", {}).items()}
-    rmse = {}
-    for name in ref["adopted"]:
-        a = _act(model, name)
-        lengths = actuator_lengths(model, postures, [a])[:, 0]
-        ln_mj = mujoco_fiber_length(model, a, lengths) + shifts.get(name, 0.0)  # undo the passive calibration's shift
-        rmse[name] = float(np.sqrt(np.mean((ln_mj - z["ln"][:, names.index(name)]) ** 2)))
-    assert all(np.isfinite(v) for v in rmse.values()), rmse
-    assert np.median(list(rmse.values())) < 0.03, rmse
-    assert max(rmse.values()) < 0.12, rmse
 
 
 def test_lengthrange_covers_single_joint_sweeps(leg):

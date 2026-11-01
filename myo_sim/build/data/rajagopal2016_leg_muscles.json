@@ -1,6 +1,10 @@
 {
- "source": "Rajagopal2016.osim (opensim-models, Models/Rajagopal), read with OpenSim 4.6; right-side values, left side identical",
- "reference": "Rajagopal A, Dembia CL, DeMers MS, Delp DD, Hicks JL, Delp SL (2016) IEEE Trans Biomed Eng 63:2068-2079, doi:10.1109/TBME.2016.2586891",
+ "source": "Rajagopal2016.osim (opensim-models, Models/Rajagopal); right-side values, left side identical. The .osim is not in this repository.",
+ "reference": "Rajagopal A, Dembia CL, DeMers MS, Delp DD, Hicks JL, Delp SL (2016) IEEE Trans Biomed Eng 63:2068-2079",
+ "doi": "10.1109/TBME.2016.2586891",
+ "licence": "LICENSE-RAJAGOPAL.txt",
+ "units": "optimal_fiber_length m, tendon_slack_length m, pennation_angle rad, max_isometric_force N",
+ "status": "transferred from the published table / .osim; adopted muscles listed below, others kept (see selection)",
  "posture_ranges_rad": {
   "hip_flexion_r": [
    -0.52,

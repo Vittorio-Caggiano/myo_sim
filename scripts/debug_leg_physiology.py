@@ -15,7 +15,7 @@ References:
 Active torque = all agonists (moment-arm sign) at full activation minus the zero-activation torque, at zero velocity; MVC is
 voluntary, so model/human ratios slightly above 1 are expected. Output: tests/output/leg_physiology/summary.json.
 
-    cd tests && uv run python debug_leg_physiology.py
+    uv run python scripts/debug_leg_physiology.py
 """
 
 import json
@@ -152,7 +152,7 @@ def main() -> None:
             "model": round(1000 * float(ln) * map_l0(model, gm), 1),
             "narici_1996": round(57.0 + (34.0 - 57.0) * (-ang) / 60.0, 1),  # linear between the reported end points
         }
-    out = Path(__file__).parent / "output" / "leg_physiology"
+    out = Path(__file__).resolve().parents[1] / "tests" / "output" / "leg_physiology"
     out.mkdir(parents=True, exist_ok=True)
     (out / "summary.json").write_text(json.dumps(summary, indent=1))
     for action, s in summary["strength"].items():

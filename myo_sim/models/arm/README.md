@@ -19,14 +19,12 @@ MyoArm is a MuJoCo musculoskeletal model of the right upper extremity — should
 ## Fidelity
 
 <!-- TODO: review (quantitative fidelity claims; reproduce with the commands below) -->
-Shoulder muscle operating lengths are checked against human shoulder motion: along the inverse-kinematics trajectories of the 18
-abduction, flexion and shrug trials of [Seth et al. 2019](https://doi.org/10.3389/fnbot.2019.00090), myoarm's normalised fibre
-lengths are compared with those of that study's thoracoscapular model for the muscles it tracks (r >= 0.8)
-(`tests/test_arm_rigid_conversion.py`, packaged sample `tests/data/seth2019_shoulder_motion.npz`). Ten arm muscles use maps
-converted directly from MoBL-ARMS ([Holzbaur et al. 2005](https://doi.org/10.1007/s10439-005-3320-7);
-`myo_sim/build/rigid_conversion.py --region arm`, list and selection in `myo_sim/build/data/mobl_arm_muscles.json`). Along the
-measured motions this brings LAT1 from 100 % of frames outside 0.5-1.5 L0 (RMSE 1.70 against Seth) to 0 % (0.16), LAT3 from
-64 % to 0 %, PECM3 from 56 % to 5 %, and TMAJ from RMSE 0.31 to 0.105.
+Ten arm muscles use maps converted directly from MoBL-ARMS
+([Holzbaur et al. 2005](https://doi.org/10.1007/s10439-005-3320-7);
+`scripts/fit_arm_rigid_maps.py`, list and selection in `myo_sim/build/data/mobl_arm_muscles.json`).
+The regression test (`tests/test_arm_rigid_conversion.py`) checks the published rigid-tendon fibre length, not a
+stored motion-capture trajectory. The adopt decision used the Seth et al. 2019 shoulder motions; those recordings
+are not in this repository.
 
 
 ![DELT1 left/right shoulder elevation relationship](../../../docs/images/DELT1_DELT1_l_shoulder_elv_r.png)

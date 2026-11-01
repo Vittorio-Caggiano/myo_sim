@@ -1,0 +1,8 @@
+mobl_arm_muscles.json holds fibre length, tendon slack, pennation and peak force
+transcribed from the MoBL-ARMS upper-limb model (Holzbaur et al. 2005 Ann Biomed
+Eng 33:829-840, doi:10.1007/s10439-005-3320-7; Saul et al. 2015 Comput Methods
+Biomech Biomed Engin 18:1445-1458, doi:10.1080/10255842.2014.916698).
+
+This file is derived parameter values, not a copy of MOBL_ARMS_41.osim. The
+.osim is not redistributed. A BSD-3 copy of the OpenSim model is published at
+https://github.com/CEINMS-RT/UpperLimbModel.

@@ -1,5 +1,6 @@
 <mujocoinclude>
 
+    <!-- Adopted range/lengthrange: scripts/fit_arm_rigid_maps.py (names in build/data/mobl_arm_muscles.json). Other actuators are not generated. -->
     <actuator>
         <general name="DELT1" tendon="DELT1_tendon" biasprm="0.33707 1.53316 1051.85 1 0 1.8 10 0.518315 1.4 0" class="myoarm_upperarm_muscle" gainprm="0.33707 1.53316 1051.85 1 0 1.8 10 0.518315 1.4 0" lengthrange="0.123363 0.240922"/>
         <general name="DELT2" tendon="DELT2_tendon" biasprm="0.467755 0.979539 909.342 1 0 1.8 10 1.73447 1.4 0" class="myoarm_upperarm_muscle" gainprm="0.467755 0.979539 909.342 1 0 1.8 10 1.73447 1.4 0" lengthrange="0.152427 0.211673"/>
