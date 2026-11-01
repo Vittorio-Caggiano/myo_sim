@@ -24,7 +24,7 @@ Example fidelity check (glmax1 left/right moment-arm and force-length plot) for 
 
 <!-- TODO: review (quantitative fidelity claims; reproduce with the commands below) -->
 Muscle fibre lengths follow the reference model: for the 24 muscles converted directly from Rajagopal et al. (2016)
-(`scripts/fit_leg_rigid_maps.py`; list in `myo_sim/build/data/rajagopal2016_leg_muscles.json`), MuJoCo's normalised fibre
+(`scripts/fit_leg_rigid_maps.py`; list in `myo_sim/build/references.py`), MuJoCo's normalised fibre
 length matches the published rigid-tendon fibre length over the full joint range (`tests/test_leg_rigid_conversion.py`).
 The OpenSim model is not stored here.
 

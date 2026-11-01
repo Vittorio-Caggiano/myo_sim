@@ -1,8 +1,8 @@
-rajagopal2016_leg_muscles.json holds fibre length, tendon slack, pennation and
-peak force transcribed from Rajagopal et al. 2016 (IEEE Trans Biomed Eng
+myo_sim.build.references.RAJAGOPAL2016_LEG holds fibre length, tendon slack
+and pennation transcribed from Rajagopal et al. 2016 (IEEE Trans Biomed Eng
 63:2068-2079, doi:10.1109/TBME.2016.2586891), Table II / the Rajagopal2016
 OpenSim model on SimTK (https://simtk.org/projects/full_body).
 
-This file is derived parameter values, not a copy of Rajagopal2016.osim. The
+These are derived parameter values, not a copy of Rajagopal2016.osim. The
 .osim is not redistributed. Use of the published table values follows the
 paper's citation; the SimTK model license is Apache-2.0.

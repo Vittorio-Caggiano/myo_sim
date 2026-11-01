@@ -1,10 +1,8 @@
 """Arm muscle maps converted from MoBL-ARMS (myo_sim/build/rigid_conversion.py, region "arm").
 
 Adopted maps match the MoBL-ARMS rigid-tendon fibre length over the full-range sample and stay inside the
-force-length bounds. The adopt list is the ``status: adopted`` rows in ``build/data/mobl_arm_muscles.json``.
+force-length bounds. The adopt list is the ``status: adopted`` rows in ``myo_sim.build.references.MOBL_ARM``.
 """
-
-import json
 
 import mujoco
 import numpy as np
@@ -25,8 +23,7 @@ from myo_sim.build.rigid_conversion import (
 @pytest.fixture(scope="module")
 def arm():
     model, _ = myo_sim.load("myoarm")
-    ref = json.loads(REGIONS["arm"]["data"].read_text())
-    return model, ref
+    return model, REGIONS["arm"]["reference"]
 
 
 def _act(model, name: str) -> int:
@@ -44,9 +41,7 @@ def test_adopted_maps_match_mobl_and_bounds(arm):
     bad = {}
     for j, (name, a) in enumerate(zip(names, acts)):
         p = ref["muscles"][name]
-        target = rigid_equivalent_fiber_length(
-            lengths[:, j], p["optimal_fiber_length"], p["tendon_slack_length"], p["pennation_angle"]
-        )
+        target = rigid_equivalent_fiber_length(lengths[:, j], p["l0"], p["lts"], p["alpha"])
         rmse = float(np.sqrt(np.mean((mujoco_fiber_length(model, a, lengths[:, j]) - target) ** 2)))
         r0, r1, lmin, lmax = model.actuator_gainprm[a, [0, 1, 4, 5]]
         if not np.isfinite(rmse) or rmse > 0.15 or not (lmin < r0 < r1 < lmax):

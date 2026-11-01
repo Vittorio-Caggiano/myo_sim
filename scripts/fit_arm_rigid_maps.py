@@ -2,8 +2,7 @@
 """Write adopted arm rigid-tendon maps into myoarm_r_muscle.xml.
 
 Development / release only. Reads published MoBL-ARMS parameters from
-myo_sim/build/data/mobl_arm_muscles.json. Does not load or commit motion-capture
-trajectories.
+myo_sim.build.references. Does not load or commit motion-capture trajectories.
 
     uv run python scripts/fit_arm_rigid_maps.py          # print
     uv run python scripts/fit_arm_rigid_maps.py --write  # rewrite XML

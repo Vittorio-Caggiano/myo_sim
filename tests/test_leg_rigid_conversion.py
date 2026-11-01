@@ -1,7 +1,7 @@
 """Leg muscle maps reproduce the reference (Rajagopal et al. 2016) rigid-tendon fibre lengths.
 
 For the muscles converted with ``myo_sim.build.rigid_conversion`` (``status: adopted`` in
-``myo_sim/build/data/rajagopal2016_leg_muscles.json``), MuJoCo's normalised fibre length over a full-range posture
+``myo_sim.build.references.RAJAGOPAL2016_LEG``), MuJoCo's normalised fibre length over a full-range posture
 sample must match the published rigid-tendon fibre length up to a constant slack shift from the passive calibration,
 left and right maps must be identical, and the maps must stay inside the force-length bounds. The semimembranosus
 check guards the regression where an oversized fit put it at ln ~1.9 standing (Rajagopal: ~0.95).
@@ -51,9 +51,7 @@ def test_adopted_maps_match_reference_fiber_length(leg):
     failures = {}
     for j, (name, a) in enumerate(zip(names, acts)):
         p = ref["muscles"][name]
-        target = rigid_equivalent_fiber_length(
-            lengths[:, j], p["optimal_fiber_length"], p["tendon_slack_length"], p["pennation_angle"]
-        )
+        target = rigid_equivalent_fiber_length(lengths[:, j], p["l0"], p["lts"], p["alpha"])
         mj = mujoco_fiber_length(model, a, lengths[:, j])
         offset = float(np.mean(mj - target))  # passive slack shift is a constant ln offset
         rmse = float(np.sqrt(np.mean((mj - target - offset) ** 2)))

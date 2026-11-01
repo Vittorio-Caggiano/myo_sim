@@ -81,7 +81,7 @@ uv run pytest tests/test_leg_muscle_symmetry.py
 ## Method: rigid-tendon maps from a published OpenSim muscle
 
 This is the identification method for a muscle-parameter refit (see *Provenance*: cited table values in
-`myo_sim/build/data/<topic>.json`, fit scripts under `scripts/fit_*.py`, output committed in `*_muscle.xml`).
+`myo_sim/build/references.py`, fit scripts under `scripts/fit_*.py`, output committed in `*_muscle.xml`).
 The raw OpenSim model and any motion-capture or simulator trajectories stay out of the repository.
 
 MuJoCo maps path length \(L\) linearly to normalised fibre length. Fit that line to the published rigid-tendon
@@ -95,11 +95,11 @@ uv run python scripts/fit_arm_rigid_maps.py --write
 uv run pytest tests/test_leg_rigid_conversion.py tests/test_leg_passive.py tests/test_arm_rigid_conversion.py
 ```
 
-JSON holds cited table values only (citation, DOI, licence, SI units, one row per muscle or Table-4
-element). Fit grids and optimizer output stay in the fit scripts; `load()` does not read the JSON.
-Adopt a muscle when fibre-length RMSE vs the published rigid-tendon length falls and isometric force
-RMSE does not rise by more than 2 % of \(F_0\). `recfem`, `vaslat` and `glmax3` stay on the previous
-maps (`status: kept`). Licence notices sit next to the JSON.
+Cited table values live in `myo_sim/build/references.py`. Fit grids and optimizer output stay in the
+fit scripts; `load()` does not read them. Adopt a muscle when fibre-length RMSE vs the published
+rigid-tendon length falls and isometric force RMSE does not rise by more than 2 % of \(F_0\).
+`recfem`, `vaslat` and `glmax3` stay on the previous maps (`status: kept`). Licence notices sit in
+`myo_sim/build/data/LICENSE-*.txt`.
 
 ---
 

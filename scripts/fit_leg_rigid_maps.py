@@ -2,8 +2,8 @@
 """Write adopted leg rigid-tendon maps into myolegs_muscle.xml.
 
 Development / release only. Reads published Rajagopal et al. (2016) fibre and
-tendon lengths from myo_sim/build/data/rajagopal2016_leg_muscles.json. Does not
-load or commit the OpenSim model or any trajectory dataset.
+tendon lengths from myo_sim.build.references. Does not load or commit the
+OpenSim model or any trajectory dataset.
 
     uv run python scripts/fit_leg_rigid_maps.py          # print
     uv run python scripts/fit_leg_rigid_maps.py --write  # rewrite XML

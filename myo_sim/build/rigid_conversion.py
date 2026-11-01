@@ -7,7 +7,7 @@ rigid-tendon fibre length is ``sqrt(max(L - lts, 0)^2 + (l0 sin alpha0)^2) / l0`
 it over sampled path lengths, so the converted muscle operates at the reference's fibre lengths without refitting ``l0`` to a
 measured length range.
 
-Reference values for the legs (Rajagopal et al. 2016) are packaged in ``data/rajagopal2016_leg_muscles.json``.
+Cited table values live in ``myo_sim.build.references``; licence notices in ``data/LICENSE-*.txt``.
 
 Usage (development / release only; rewrites adopted ``range`` and ``lengthrange``)::
 
@@ -18,19 +18,19 @@ Usage (development / release only; rewrites adopted ``range`` and ``lengthrange`
 from __future__ import annotations
 
 import argparse
-import json
 import re
 from pathlib import Path
 
 import mujoco
 import numpy as np
 
-DATA = Path(__file__).parent / "data" / "rajagopal2016_leg_muscles.json"
+from myo_sim.build.references import MOBL_ARM, RAJAGOPAL2016_LEG
+
 LEG_MUSCLE_XML = Path(__file__).parents[1] / "models" / "leg" / "assets" / "myolegs_muscle.xml"
 MODELS = Path(__file__).parents[1] / "models"
-REGIONS = {  # cited table JSON, model, muscle XML, joints to sweep, and how the other side is derived
+REGIONS = {  # cited table, model, muscle XML, joints to sweep, and how the other side is derived
     "leg": {
-        "data": DATA,
+        "reference": RAJAGOPAL2016_LEG,
         "model": "myolegs",
         "xml": LEG_MUSCLE_XML,
         "mirror": ("_r", "_l"),
@@ -45,7 +45,7 @@ REGIONS = {  # cited table JSON, model, muscle XML, joints to sweep, and how the
         ),
     },
     "arm": {
-        "data": Path(__file__).parent / "data" / "mobl_arm_muscles.json",
+        "reference": MOBL_ARM,
         "model": "myoarm",
         "xml": MODELS / "arm" / "assets" / "myoarm_r_muscle.xml",
         "mirror": None,
@@ -63,7 +63,7 @@ REGIONS = {  # cited table JSON, model, muscle XML, joints to sweep, and how the
 
 
 def load_leg_reference() -> dict:
-    return json.loads(DATA.read_text())
+    return RAJAGOPAL2016_LEG
 
 
 def adopted_names(ref: dict) -> list[str]:
@@ -195,7 +195,7 @@ def region_rigid_maps(
     model: mujoco.MjModel, region: str, n: int = 400, seed: int = 123
 ) -> dict[str, tuple[float, float, float, float]]:
     """Fitted maps for a region's adopted muscles (``REGIONS``): random full-range postures plus single-joint sweeps."""
-    ref = json.loads(REGIONS[region]["data"].read_text())
+    ref = REGIONS[region]["reference"]
     ranges = joint_ranges(model, REGIONS[region]["joints"])
     postures = sample_postures(model, ranges, n, seed)
     names = adopted_names(ref)
@@ -208,9 +208,9 @@ def region_rigid_maps(
         lmin, lmax = (float(v) for v in model.actuator_gainprm[a, 4:6])
         maps[name] = fit_rigid_muscle_map(
             lengths[:, j],
-            p["optimal_fiber_length"],
-            p["tendon_slack_length"],
-            p["pennation_angle"],
+            p["l0"],
+            p["lts"],
+            p["alpha"],
             lmin,
             lmax,
             span_length=sweeps[:, j],

@@ -2,6 +2,10 @@
 
 Append-only maintenance log, most recent first.
 
+## 2026-11-01 — No JSON in build/data
+Changed: removed `build/data/*.json`; cited table values moved to `myo_sim/build/references.py`; `build/data/` keeps `LICENSE-*.txt` only
+Why: model policy: raw datasets stay out of the repo; the committed product is the XML; cited numbers are code constants, not data files.
+
 ## 2026-11-01 — Provenance JSON is cited tables only
 Changed: slimmed `build/data/*.json` to citation/DOI/licence plus table rows; moved fit grids out of JSON; dropped `scripts/debug_leg_physiology.py`; `--write` no longer dumps fit logs back into JSON
 Why: model policy (MyoHub/myo_sim#140): `build/data/<topic>.json` holds one row per element, not optimizer output, posture grids or analysis scripts.

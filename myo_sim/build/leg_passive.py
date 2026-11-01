@@ -20,7 +20,7 @@ Passive moments are evaluated with MuJoCo's passive curve on precomputed path le
 joint-equality followers, e.g. knee translations and patella, resolved; they do not depend on the fitted parameters);
 ``tests/test_leg_passive.py`` checks them against ``mj_forward`` forces.
 
-Silder Table 4 lives in ``data/leg_passive.json``. Fit-time grids and the output stay in this module; ``--write``
+Silder Table 4 lives in ``myo_sim.build.references.SILDER2007``. Fit-time grids stay in this module; ``--write``
 rewrites XML only.
 
 Usage::
@@ -41,9 +41,9 @@ from pathlib import Path
 import mujoco
 import numpy as np
 
+from myo_sim.build.references import SILDER2007
 from myo_sim.build.rigid_conversion import LEG_MUSCLE_XML, effective_moment_arms, sample_postures
 
-DATA = Path(__file__).parent / "data" / "leg_passive.json"
 T_MAX = 40.0  # N m; the exponential fits are not used beyond this
 EXCESS_WEIGHT = 10.0
 MAX_SHIFT = 0.15  # |slack shift| / L0
@@ -53,7 +53,7 @@ FPMAX_PENALTY = 1.0  # N m per unit |ln(fpmax / reference)|
 MIN_FL = 0.5
 RANGE_MARGIN = 0.05  # keep the optimal length at least this far inside the shifted operating range
 JOINTS = ("hip_flexion_r", "knee_angle_r", "ankle_angle_r")
-# Fit-time configuration (not source data). Table 4 itself is in the JSON.
+# Fit-time configuration. Table 4 itself is SILDER2007.
 GROUPS = {
     "hamstrings": ["semimem", "semiten", "bflh"],
     "knee_flexors_uni": ["bfsh"],
@@ -111,7 +111,7 @@ NARICI_FASCICLE = {
 
 
 def load_passive_data() -> dict:
-    return json.loads(DATA.read_text())
+    return SILDER2007
 
 
 def silder_moments(p: dict, hip: np.ndarray, knee: np.ndarray, ankle: np.ndarray) -> np.ndarray:

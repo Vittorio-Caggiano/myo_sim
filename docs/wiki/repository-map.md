@@ -22,7 +22,8 @@ myo_sim/              # installable Python package
     utils.py          # MirrorRules, mirror_element(), add_contact_pairs(), XML composition helpers
     hand.py           # prune_arm_spec_to_hand()
     rigid_conversion.py  # library for scripts/fit_{leg,arm}_rigid_maps.py (not used at load time)
-    data/                # cited table JSON + LICENSE-*.txt; no fit logs or trajectories
+    references.py        # cited table values (Rajagopal, MoBL-ARMS, Silder)
+    data/                # LICENSE-*.txt only; no JSON, datasets or trajectories
     leg_passive.py       # library for scripts/fit_leg_passive.py
 scripts/
   fit_leg_rigid_maps.py / fit_arm_rigid_maps.py / fit_leg_passive.py
@@ -50,7 +51,7 @@ docs/wiki/            # canonical wiki location
 
 | Task | Location |
 |---|---|
-| Set rigid muscle parameters from the reference model | `scripts/fit_leg_rigid_maps.py` / `scripts/fit_arm_rigid_maps.py` (provenance in `build/data/`) |
+| Set rigid muscle parameters from the reference model | `scripts/fit_leg_rigid_maps.py` / `scripts/fit_arm_rigid_maps.py` (cited values in `build/references.py`) |
 | Edit a muscle path or via-point | `myo_sim/models/<part>/assets/*_muscle.xml` and `*_tendon.xml` |
 | Edit skeleton geometry | `myo_sim/models/<part>/assets/*_chain.xml` |
 | Add a composed model | `myo_sim/build/compose.py` — new `BuildStrategy`, builder, `SPEC_BUILDERS` and `MODEL_REGISTRY` entries |
