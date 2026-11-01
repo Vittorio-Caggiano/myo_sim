@@ -98,8 +98,8 @@ uv run pytest tests/test_leg_rigid_conversion.py tests/test_leg_passive.py tests
 Cited table values live in `myo_sim/build/references.py`. Fit grids and optimizer output stay in the
 fit scripts; `load()` does not read them. Adopt a muscle when fibre-length RMSE vs the published
 rigid-tendon length falls and isometric force RMSE does not rise by more than 2 % of \(F_0\).
-`recfem`, `vaslat` and `glmax3` stay on the previous maps (`status: kept`). Licence notices sit in
-`myo_sim/build/data/LICENSE-*.txt`.
+`recfem`, `vaslat` and `glmax3` stay on the previous maps (`status: kept`). Citations sit in
+`myo_sim/build/references.py`.
 
 ---
 

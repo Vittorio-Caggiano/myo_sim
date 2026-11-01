@@ -7,7 +7,7 @@ rigid-tendon fibre length is ``sqrt(max(L - lts, 0)^2 + (l0 sin alpha0)^2) / l0`
 it over sampled path lengths, so the converted muscle operates at the reference's fibre lengths without refitting ``l0`` to a
 measured length range.
 
-Cited table values live in ``myo_sim.build.references``; licence notices in ``data/LICENSE-*.txt``.
+Cited table values live in ``myo_sim.build.references``.
 
 Usage (development / release only; rewrites adopted ``range`` and ``lengthrange``)::
 

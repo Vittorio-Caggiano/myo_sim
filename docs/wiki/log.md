@@ -2,6 +2,10 @@
 
 Append-only maintenance log, most recent first.
 
+## 2026-11-01 — Drop build/data
+Changed: removed `myo_sim/build/data/` (JSON and LICENSE-*.txt); citations live in `myo_sim/build/references.py`
+Why: no data directory; the committed product is the XML and cited table constants sit next to the fit code.
+
 ## 2026-11-01 — No JSON in build/data
 Changed: removed `build/data/*.json`; cited table values moved to `myo_sim/build/references.py`; `build/data/` keeps `LICENSE-*.txt` only
 Why: model policy: raw datasets stay out of the repo; the committed product is the XML; cited numbers are code constants, not data files.

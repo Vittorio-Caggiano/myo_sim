@@ -1,7 +1,16 @@
 """Cited table values for the rigid-map and passive-fit scripts.
 
 Transcribed published numbers only. Papers and OpenSim models stay out of the repo.
-Licence notices: data/LICENSE-RAJAGOPAL.txt, LICENSE-MOBL-ARMS.txt, LICENSE-SILDER.txt.
+
+Rajagopal et al. 2016 IEEE Trans Biomed Eng 63:2068-2079, doi:10.1109/TBME.2016.2586891.
+SimTK full_body is Apache-2.0; Rajagopal2016.osim is not redistributed.
+
+Holzbaur et al. 2005 Ann Biomed Eng 33:829-840, doi:10.1007/s10439-005-3320-7;
+Saul et al. 2015 Comput Methods Biomech Biomed Engin 18:1445-1458, doi:10.1080/10255842.2014.916698.
+SimTK MoBL-ARMS is BSD-3 with a non-commercial restriction; MOBL_ARMS_41.osim is not redistributed.
+
+Silder et al. 2007 J Biomech 40:2628-2635, doi:10.1016/j.jbiomech.2006.12.017.
+Table 4 means only; subject recordings are not stored.
 """
 
 from __future__ import annotations

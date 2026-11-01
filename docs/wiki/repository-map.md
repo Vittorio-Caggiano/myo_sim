@@ -23,7 +23,6 @@ myo_sim/              # installable Python package
     hand.py           # prune_arm_spec_to_hand()
     rigid_conversion.py  # library for scripts/fit_{leg,arm}_rigid_maps.py (not used at load time)
     references.py        # cited table values (Rajagopal, MoBL-ARMS, Silder)
-    data/                # LICENSE-*.txt only; no JSON, datasets or trajectories
     leg_passive.py       # library for scripts/fit_leg_passive.py
 scripts/
   fit_leg_rigid_maps.py / fit_arm_rigid_maps.py / fit_leg_passive.py
