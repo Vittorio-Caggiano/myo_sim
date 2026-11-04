@@ -13,6 +13,8 @@ from __future__ import annotations
 import numpy as np
 import warp as wp
 
+from .launch_util import launch as _launch
+
 wp.set_module_options({"enable_backward": False})
 
 PLANE, SPHERE, CAPSULE = 0, 2, 3
@@ -221,10 +223,12 @@ def _emit(
 
 
 @wp.kernel
-def _collide(
+def _narrowphase(
     gt: GeomTable,
     pairs: wp.array(dtype=wp.vec2i),
     naconmax: int,
+    active: wp.array2d(dtype=int),
+    nactive: wp.array(dtype=int),
     gpos: wp.array2d(dtype=wp.vec3),
     grot: wp.array2d(dtype=wp.mat33),
     nacon_out: wp.array(dtype=int),
@@ -238,25 +242,18 @@ def _collide(
     worldid = wp.tid()
     cid = int(0)
     ncol = int(0)
-    for p in range(pairs.shape[0]):
+    # Pair order decides the contact order and with it the float32 force sums, so restore it first.
+    for k in range(1, nactive[worldid]):
+        x = active[worldid, k]
+        j = k - 1
+        while j >= 0 and active[worldid, j] > x:
+            active[worldid, j + 1] = active[worldid, j]
+            j -= 1
+        active[worldid, j + 1] = x
+    for k in range(nactive[worldid]):
+        p = active[worldid, k]
         a = pairs[p][0]
         b = pairs[p][1]
-        xa = gpos[worldid, a]
-        xb = gpos[worldid, b]
-        Ra = grot[worldid, a]
-        Rb = grot[worldid, b]
-        ok = bool(True)
-        if gt.rbound[a] == 0.0 or gt.rbound[b] == 0.0:
-            ok = plane_filter(gt.rbound[a], gt.rbound[b], xa, xb, Ra, Rb)
-        else:
-            if not sphere_filter(gt.rbound[a], gt.rbound[b], xa, xb):
-                ok = False
-            elif not aabb_filter(gt.aabb_center[a], gt.aabb_center[b], gt.aabb_size[a], gt.aabb_size[b], xa, xb, Ra, Rb):
-                ok = False
-            elif not obb_filter(gt.aabb_center[a], gt.aabb_center[b], gt.aabb_size[a], gt.aabb_size[b], xa, xb, Ra, Rb):
-                ok = False
-        if not ok:
-            continue
         pid = ncol
         ncol += 1
         if pid >= naconmax:
@@ -384,6 +381,37 @@ def _collide(
                         )
     nacon_out[worldid] = wp.min(cid, naconmax)
     ncollision_out[worldid] = ncol
+
+
+@wp.kernel
+def _broadphase(
+    gt: GeomTable,
+    pairs: wp.array(dtype=wp.vec2i),
+    gpos: wp.array2d(dtype=wp.vec3),
+    grot: wp.array2d(dtype=wp.mat33),
+    active_out: wp.array2d(dtype=int),
+    nactive_out: wp.array(dtype=int),
+):
+    """One thread per world and pair: appends the pairs that pass the filters to the world's active list (unordered)."""
+    worldid, p = wp.tid()
+    a = pairs[p][0]
+    b = pairs[p][1]
+    xa = gpos[worldid, a]
+    xb = gpos[worldid, b]
+    Ra = grot[worldid, a]
+    Rb = grot[worldid, b]
+    ok = bool(True)
+    if gt.rbound[a] == 0.0 or gt.rbound[b] == 0.0:
+        ok = plane_filter(gt.rbound[a], gt.rbound[b], xa, xb, Ra, Rb)
+    else:
+        if not sphere_filter(gt.rbound[a], gt.rbound[b], xa, xb):
+            ok = False
+        elif not aabb_filter(gt.aabb_center[a], gt.aabb_center[b], gt.aabb_size[a], gt.aabb_size[b], xa, xb, Ra, Rb):
+            ok = False
+        elif not obb_filter(gt.aabb_center[a], gt.aabb_center[b], gt.aabb_size[a], gt.aabb_size[b], xa, xb, Ra, Rb):
+            ok = False
+    if ok:
+        active_out[worldid, wp.atomic_add(nactive_out, worldid, 1)] = p
 
 
 @wp.func
@@ -521,6 +549,9 @@ class ContactSystem:
         z = lambda shape, dt: wp.zeros(shape, dtype=dt, device=device)  # noqa
         self.gpos = z((nworld, self.ngeom), wp.vec3)
         self.grot = z((nworld, self.ngeom), wp.mat33)
+        npair = self.pairs.shape[0]
+        self.active = z((nworld, npair), int)
+        self.nactive = z(nworld, int)
         self.nacon = z(nworld, int)
         self.ncollision = z(nworld, int)
         self.c_dist = z((nworld, naconmax), float)
@@ -537,17 +568,25 @@ class ContactSystem:
 
     def run(self):
         """Contacts and wrenches from self.bpos / self.bquat / self.bvel."""
-        wp.launch(
+        _launch(
             _geom_poses, dim=(self.nworld, self.ngeom), inputs=[self.gt, self.bpos, self.bquat], outputs=[self.gpos, self.grot]
         )
-        wp.launch(
-            _collide,
+        npair = self.pairs.shape[0]
+        self.nactive.zero_()
+        _launch(
+            _broadphase,
+            dim=(self.nworld, npair),
+            inputs=[self.gt, self.pairs, self.gpos, self.grot],
+            outputs=[self.active, self.nactive],
+        )
+        _launch(
+            _narrowphase,
             dim=self.nworld,
-            inputs=[self.gt, self.pairs, self.naconmax, self.gpos, self.grot],
+            inputs=[self.gt, self.pairs, self.naconmax, self.active, self.nactive, self.gpos, self.grot],
             outputs=[self.nacon, self.ncollision, self.c_dist, self.c_pos, self.c_normal, self.c_curv, self.c_geom],
         )
         self.wrench.zero_()
-        wp.launch(
+        _launch(
             _hunt_crossley,
             dim=self.nworld,
             inputs=[
@@ -566,7 +605,7 @@ class ContactSystem:
 
     def compute(self, m, d):
         """From mujoco_warp data (after kinematics and com velocities)."""
-        wp.launch(
+        _launch(
             _mj_body_state,
             dim=(self.nworld, self.nbody),
             inputs=[m.body_rootid, d.xpos, d.xquat, d.cvel, d.subtree_com],
@@ -576,6 +615,4 @@ class ContactSystem:
 
     def apply(self, d):
         """Adds the contact wrenches to d.xfrc_applied (caller zeroes it once per evaluation)."""
-        wp.launch(
-            _wrench_to_xfrc, dim=(self.nworld, self.nbody), inputs=[d.xpos, d.xipos, self.wrench], outputs=[d.xfrc_applied]
-        )
+        _launch(_wrench_to_xfrc, dim=(self.nworld, self.nbody), inputs=[d.xpos, d.xipos, self.wrench], outputs=[d.xfrc_applied])
