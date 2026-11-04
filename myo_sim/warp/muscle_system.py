@@ -17,9 +17,12 @@ from mujoco_warp._src import util_misc as mjw_util
 from mujoco_warp._src.types import vec10
 
 from . import consts as K
+from .launch_util import launch as _launch
+from .poly_kernels import KERNELS as _POLY_KERNELS
 
 wp.set_module_options({"enable_backward": False})
 
+MET_OFF = 256  # as in the C plugin: skip metabolics, state slot 7 stays 0, dynamics are unaffected
 NPARAM = 21
 NOUT = 12
 NSTATE = 10
@@ -424,12 +427,19 @@ def poly_eval(
 
 
 # --------------------------------------------------------------------------------------------- system kernels
+@wp.func
+def step_function(x: float, t0: float, t1: float, v0: float, v1: float) -> float:
+    if x <= t0:
+        return v0
+    if x >= t1:
+        return v1
+    t = (x - t0) / (t1 - t0)
+    return v0 + t * t * (3.0 - 2.0 * t) * (v1 - v0)
+
+
 @wp.kernel
-def _muscle_compute(
-    # model
-    params: wp.array(dtype=vec21),
-    family: wp.array(dtype=int),
-    ctrl_id: wp.array(dtype=int),
+def _path_generic(
+    group: wp.array(dtype=int),
     dim: wp.array(dtype=int),
     order: wp.array(dtype=int),
     nterm: wp.array(dtype=int),
@@ -439,6 +449,45 @@ def _muscle_compute(
     coef_adr: wp.array(dtype=int),
     qposadr: wp.array2d(dtype=int),
     dofadr: wp.array2d(dtype=int),
+    qpos: wp.array2d(dtype=float),
+    qvel: wp.array2d(dtype=float),
+    state: wp.array3d(dtype=float),
+    grad_out: wp.array3d(dtype=float),
+):
+    worldid, k = wp.tid()
+    i = group[k]
+    d = dim[i]
+    q = vecd(0.0)
+    for j in range(d):
+        q[j] = qpos[worldid, qposadr[i, j]]
+    r = poly_eval(d, order[i], nterm[i], exps, exp_adr[i], coef, coef_adr[i], q)
+    V = float(0.0)
+    for j in range(d):
+        V = V + r[j + 1] * qvel[worldid, dofadr[i, j]]
+        grad_out[worldid, i, j] = r[j + 1]
+    state[worldid, i, 3] = r[0]
+    state[worldid, i, 4] = V
+
+
+@wp.kernel
+def _path_tendon(
+    group: wp.array(dtype=int),
+    pt_tendon: wp.array(dtype=int),
+    ten_length: wp.array2d(dtype=float),
+    ten_velocity: wp.array2d(dtype=float),
+    state: wp.array3d(dtype=float),
+):
+    worldid, k = wp.tid()
+    i = group[k]
+    state[worldid, i, 3] = ten_length[worldid, pt_tendon[i]]
+    state[worldid, i, 4] = ten_velocity[worldid, pt_tendon[i]]
+
+
+@wp.kernel
+def _muscle_force(
+    params: wp.array(dtype=vec21),
+    family: wp.array(dtype=int),
+    ctrl_id: wp.array(dtype=int),
     gainprm: wp.array(dtype=vec10),
     lengthrange: wp.array(dtype=wp.vec2),
     acc0: wp.array(dtype=float),
@@ -446,31 +495,13 @@ def _muscle_compute(
     met_flags: int,
     aerobic: float,
     effort: float,
-    pt_tendon: wp.array(dtype=int),
-    # data in
-    qpos: wp.array2d(dtype=float),
-    qvel: wp.array2d(dtype=float),
     ctrl: wp.array2d(dtype=float),
-    ten_length: wp.array2d(dtype=float),
-    ten_velocity: wp.array2d(dtype=float),
-    # data out
     state: wp.array3d(dtype=float),
-    grad_out: wp.array3d(dtype=float),
 ):
+    """Force, activation rate and fibre velocity from the path length and velocity in state slots 3 and 4."""
     worldid, i = wp.tid()
-    d = dim[i]
-    q = vecd(0.0)
-    for j in range(d):
-        q[j] = qpos[worldid, qposadr[i, j]]
-    r = poly_eval(d, order[i], nterm[i], exps, exp_adr[i], coef, coef_adr[i], q)
-    L = r[0]
-    V = float(0.0)
-    for j in range(d):
-        V = V + r[j + 1] * qvel[worldid, dofadr[i, j]]
-        grad_out[worldid, i, j] = r[j + 1]
-    if pt_tendon[i] >= 0:  # Bolt as released: point-path length/velocity overwrite the polynomial ones
-        L = ten_length[worldid, pt_tendon[i]]
-        V = ten_velocity[worldid, pt_tendon[i]]
+    L = state[worldid, i, 3]
+    V = state[worldid, i, 4]
     u = wp.clamp(ctrl[worldid, ctrl_id[i]], 0.0, 1.0)
     act = state[worldid, i, 0]
     p = params[i]
@@ -480,7 +511,8 @@ def _muscle_compute(
         F = o[0]
         state[worldid, i, 5] = act_dot(act, u, p)
         state[worldid, i, 6] = o[9]
-        state[worldid, i, 7] = metabolics(act, u, o, p, met_flags, aerobic, effort)
+        if (met_flags & MET_OFF) == 0:
+            state[worldid, i, 7] = metabolics(act, u, o, p, met_flags, aerobic, effort)
         state[worldid, i, 8] = o[3]
         state[worldid, i, 9] = o[1]
     else:
@@ -493,55 +525,65 @@ def _muscle_compute(
         state[worldid, i, 8] = 0.0
         state[worldid, i, 9] = 0.0
     state[worldid, i, 2] = F
-    state[worldid, i, 3] = L
-    state[worldid, i, 4] = V
 
 
 @wp.kernel
-def _accumulate_qfrc(
-    nmuscle: int,
-    dim: wp.array(dtype=int),
-    dofadr: wp.array2d(dtype=int),
+def _accumulate_dof(
+    dof_list: wp.array(dtype=int),
+    dof_start: wp.array(dtype=int),
+    ent_mus: wp.array(dtype=int),
+    ent_j: wp.array(dtype=int),
     state: wp.array3d(dtype=float),
     grad: wp.array3d(dtype=float),
     qfrc: wp.array2d(dtype=float),
 ):
-    worldid = wp.tid()
-    for i in range(nmuscle):
-        F = state[worldid, i, 2]
-        for j in range(dim[i]):
-            qfrc[worldid, dofadr[i, j]] = qfrc[worldid, dofadr[i, j]] - F * grad[worldid, i, j]
+    """One thread per world and DOF; each DOF sums its muscles in muscle order, as the per-world loop did."""
+    worldid, k = wp.tid()
+    dof = dof_list[k]
+    v = qfrc[worldid, dof]
+    for e in range(dof_start[k], dof_start[k + 1]):
+        v = v - state[worldid, ent_mus[e], 2] * grad[worldid, ent_mus[e], ent_j[e]]
+    qfrc[worldid, dof] = v
 
 
 @wp.kernel
-def _accumulate_tendon_qfrc(
-    pt_muscles: wp.array(dtype=int),
-    pt_tendon: wp.array(dtype=int),
-    ten_J_rownnz: wp.array(dtype=int),
-    ten_J_rowadr: wp.array(dtype=int),
-    ten_J_colind: wp.array(dtype=int),
+def _accumulate_tendon_dof(
+    dof_list: wp.array(dtype=int),
+    dof_start: wp.array(dtype=int),
+    ent_mus: wp.array(dtype=int),
+    ent_adr: wp.array(dtype=int),
     ten_J: wp.array2d(dtype=float),
     state: wp.array3d(dtype=float),
     qfrc: wp.array2d(dtype=float),
 ):
+    """Tendon-path force through the sparse Jacobian, one thread per world and DOF, without atomics."""
     worldid, k = wp.tid()
-    i = pt_muscles[k]
-    t = pt_tendon[i]
-    F = state[worldid, i, 2]
-    adr = ten_J_rowadr[t]
-    for j in range(ten_J_rownnz[t]):
-        c = ten_J_colind[adr + j]
-        wp.atomic_add(qfrc, worldid, c, -F * ten_J[worldid, adr + j])
+    dof = dof_list[k]
+    v = qfrc[worldid, dof]
+    for e in range(dof_start[k], dof_start[k + 1]):
+        v = v - state[worldid, ent_mus[e], 2] * ten_J[worldid, ent_adr[e]]
+    qfrc[worldid, dof] = v
 
 
-@wp.func
-def step_function(x: float, t0: float, t1: float, v0: float, v1: float) -> float:
-    if x <= t0:
-        return v0
-    if x >= t1:
-        return v1
-    t = (x - t0) / (t1 - t0)
-    return v0 + t * t * (3.0 - 2.0 * t) * (v1 - v0)
+@wp.kernel
+def _limits_par(
+    lim_adr: wp.array2d(dtype=int),
+    lim_prm: wp.array2d(dtype=float),
+    qpos: wp.array2d(dtype=float),
+    qvel: wp.array2d(dtype=float),
+    qfrc: wp.array2d(dtype=float),
+):
+    """One thread per world and limit; only valid when every limit has its own DOF."""
+    worldid, i = wp.tid()
+    q = qpos[worldid, lim_adr[i, 0]]
+    qd = qvel[worldid, lim_adr[i, 1]]
+    q_low = lim_prm[i, 0]
+    q_up = lim_prm[i, 1]
+    tr = lim_prm[i, 5]
+    w_up = step_function(q, q_up, q_up + tr, 0.0, 1.0)
+    w_low = step_function(q, q_low - tr, q_low, 1.0, 0.0)
+    f = -(w_up * lim_prm[i, 3]) * (q - q_up) + (w_low * lim_prm[i, 2]) * (q_low - q) - lim_prm[i, 4] * (w_up + w_low) * qd
+    qfrc[worldid, lim_adr[i, 1]] = qfrc[worldid, lim_adr[i, 1]] + f
 
 
 @wp.kernel
@@ -663,6 +705,8 @@ class MuscleSystem:
         self.acc0 = A(acc0, float)
         self.dynprm = A(dyn, vec10)
         self.pt_tendon = A(ptt, int)
+        self.pt_tendon_np = ptt
+        self.tdof = None
         self.pt_muscles_np = np.flatnonzero(ptt >= 0).astype(np.int32)
         self.pt_muscles = A(self.pt_muscles_np if len(self.pt_muscles_np) else np.zeros(1, np.int32), int)
         self.nlimit = len(limits)
@@ -674,25 +718,101 @@ class MuscleSystem:
         self.lim_adr = A(la, int)
         self.lim_prm = A(lp, float)
         self.state = wp.zeros((nworld, self.n, NSTATE), dtype=float, device=device)
+        # Muscles grouped by polynomial shape; each group gets its own path kernel.
+        groups: dict[tuple[int, int], list[int]] = {}
+        for i in range(self.n):
+            if dims[i]:
+                groups.setdefault((dims[i], orders[i]), []).append(i)
+        self.path_groups = []
+        generic = []
+        for key, ids in groups.items():
+            if key in _POLY_KERNELS:
+                self.path_groups.append((_POLY_KERNELS[key], A(np.array(ids, np.int32), int), len(ids)))
+            else:
+                generic.extend(ids)
+        self.path_generic = (A(np.array(sorted(generic), np.int32), int), len(generic)) if generic else None
+        self.tendon_group = A(self.pt_muscles_np, int) if len(self.pt_muscles_np) else None
+        # Inverted muscle -> DOF table: per DOF, the (muscle, j) entries in muscle order.
+        ents: dict[int, list[tuple[int, int]]] = {}
+        for i in range(self.n):
+            for j in range(dims[i]):
+                ents.setdefault(int(dadr[i, j]), []).append((i, j))
+        dl = sorted(ents)
+        start = np.cumsum([0] + [len(ents[k]) for k in dl]).astype(np.int32)
+        flat = [e for k in dl for e in ents[k]]
+        self.dof_n = len(dl)
+        self.dof_list = A(np.array(dl or [0], np.int32), int)
+        self.dof_start = A(start, int)
+        self.ent_mus = A(np.array([e[0] for e in flat] or [0], np.int32), int)
+        self.ent_j = A(np.array([e[1] for e in flat] or [0], np.int32), int)
+        self.lim_unique = self.nlimit == len({int(la[i, 1]) for i in range(self.nlimit)})
         self.grad = wp.zeros((nworld, self.n, MAXD), dtype=float, device=device)
 
+    def prepare(self, m):
+        """Inverted tendon Jacobian table. Call before capturing a graph that contains apply()."""
+        rownnz, rowadr, colind = m.ten_J_rownnz.numpy(), m.ten_J_rowadr.numpy(), m.ten_J_colind.numpy()
+        ents: dict[int, list[tuple[int, int]]] = {}
+        for i in self.pt_muscles_np:
+            t = int(self.pt_tendon_np[i])
+            for a in range(int(rowadr[t]), int(rowadr[t]) + int(rownnz[t])):
+                ents.setdefault(int(colind[a]), []).append((int(i), a))
+        dl = sorted(ents)
+        flat = [e for k in dl for e in ents[k]]
+        dev = self.state.device
+
+        def A(x):
+            return wp.array(np.asarray(x, np.int32), dtype=int, device=dev)
+
+        self.tdof = (
+            A(dl or [0]),
+            A(np.cumsum([0] + [len(ents[k]) for k in dl])),
+            A([e[0] for e in flat] or [0]),
+            A([e[1] for e in flat] or [0]),
+            len(dl),
+        )
+
     def compute(self, d):
-        wp.launch(
-            _muscle_compute,
+        for kernel, group, n in self.path_groups:
+            _launch(
+                kernel,
+                dim=(self.nworld, n),
+                inputs=[group, self.coef, self.coef_adr, self.qposadr, self.dofadr, d.qpos, d.qvel],
+                outputs=[self.state, self.grad],
+            )
+        if self.path_generic is not None:
+            _launch(
+                _path_generic,
+                dim=(self.nworld, self.path_generic[1]),
+                inputs=[
+                    self.path_generic[0],
+                    self.dim,
+                    self.order,
+                    self.nterm,
+                    self.exps,
+                    self.exp_adr,
+                    self.coef,
+                    self.coef_adr,
+                    self.qposadr,
+                    self.dofadr,
+                    d.qpos,
+                    d.qvel,
+                ],
+                outputs=[self.state, self.grad],
+            )
+        if self.tendon_group is not None:  # point-path length and velocity overwrite the polynomial ones
+            _launch(
+                _path_tendon,
+                dim=(self.nworld, self.tendon_group.shape[0]),
+                inputs=[self.tendon_group, self.pt_tendon, d.ten_length, d.ten_velocity],
+                outputs=[self.state],
+            )
+        _launch(
+            _muscle_force,
             dim=(self.nworld, self.n),
             inputs=[
                 self.params,
                 self.family,
                 self.ctrl_id,
-                self.dim,
-                self.order,
-                self.nterm,
-                self.exps,
-                self.exp_adr,
-                self.coef,
-                self.coef_adr,
-                self.qposadr,
-                self.dofadr,
                 self.gainprm,
                 self.lengthrange,
                 self.acc0,
@@ -700,43 +820,50 @@ class MuscleSystem:
                 self.met[0],
                 self.met[1],
                 self.met[2],
-                self.pt_tendon,
-                d.qpos,
-                d.qvel,
                 d.ctrl,
-                d.ten_length,
-                d.ten_velocity,
             ],
-            outputs=[self.state, self.grad],
+            outputs=[self.state],
         )
 
     def apply(self, d, m=None, zero=True):
         if zero:
             d.qfrc_applied.zero_()
-        wp.launch(
-            _accumulate_qfrc,
-            dim=self.nworld,
-            inputs=[self.n, self.dim, self.dofadr, self.state, self.grad],
-            outputs=[d.qfrc_applied],
-        )
+        if self.dof_n:
+            _launch(
+                _accumulate_dof,
+                dim=(self.nworld, self.dof_n),
+                inputs=[self.dof_list, self.dof_start, self.ent_mus, self.ent_j, self.state, self.grad],
+                outputs=[d.qfrc_applied],
+            )
         if len(self.pt_muscles_np):
             assert m is not None, "point-path muscles need the mujoco_warp model (tendon Jacobian)"
-            wp.launch(
-                _accumulate_tendon_qfrc,
-                dim=(self.nworld, len(self.pt_muscles_np)),
-                inputs=[self.pt_muscles, self.pt_tendon, m.ten_J_rownnz, m.ten_J_rowadr, m.ten_J_colind, d.ten_J, self.state],
-                outputs=[d.qfrc_applied],
-            )
+            if self.tdof is None:
+                self.prepare(m)
+            if self.tdof[4]:
+                _launch(
+                    _accumulate_tendon_dof,
+                    dim=(self.nworld, self.tdof[4]),
+                    inputs=[self.tdof[0], self.tdof[1], self.tdof[2], self.tdof[3], d.ten_J, self.state],
+                    outputs=[d.qfrc_applied],
+                )
         if self.nlimit:
-            wp.launch(
-                _limits,
-                dim=self.nworld,
-                inputs=[self.lim_adr, self.lim_prm, self.nlimit, d.qpos, d.qvel],
-                outputs=[d.qfrc_applied],
-            )
+            if self.lim_unique:
+                _launch(
+                    _limits_par,
+                    dim=(self.nworld, self.nlimit),
+                    inputs=[self.lim_adr, self.lim_prm, d.qpos, d.qvel],
+                    outputs=[d.qfrc_applied],
+                )
+            else:
+                _launch(
+                    _limits,
+                    dim=self.nworld,
+                    inputs=[self.lim_adr, self.lim_prm, self.nlimit, d.qpos, d.qvel],
+                    outputs=[d.qfrc_applied],
+                )
 
     def advance(self, timestep):
-        wp.launch(_advance, dim=(self.nworld, self.n), inputs=[self.params, self.family, float(timestep)], outputs=[self.state])
+        _launch(_advance, dim=(self.nworld, self.n), inputs=[self.params, self.family, float(timestep)], outputs=[self.state])
 
     def equilibrate(self, d, reset=None):
         """Re-solve fiber length at force equilibrium for the worlds in ``reset`` (bool per world; None = all).
@@ -746,7 +873,7 @@ class MuscleSystem:
             reset = np.ones(self.nworld, dtype=bool)
         if not isinstance(reset, wp.array):
             reset = wp.array(np.asarray(reset, dtype=bool).reshape(self.nworld), dtype=bool, device=self.state.device)
-        wp.launch(_equilibrate, dim=(self.nworld, self.n), inputs=[self.params, reset], outputs=[self.state])
+        _launch(_equilibrate, dim=(self.nworld, self.n), inputs=[self.params, reset], outputs=[self.state])
 
     def step(self, m, d, timestep):
         import mujoco_warp as mjw
